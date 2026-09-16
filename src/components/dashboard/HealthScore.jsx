@@ -1,10 +1,34 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, Plus, Pencil, Trash2, TrendingUp, TrendingDown, Wallet, Target } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ShieldCheck, Plus, Pencil, Trash2, TrendingUp, TrendingDown } from 'lucide-react';
 import { useHealthGoals, useTransactions, useCategories, addHealthGoal, updateHealthGoal, deleteHealthGoal } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
 import { calculateGoalActual, calculateGoalRating, calculateHealthScore } from '../../lib/insights';
 import Modal from '../ui/Modal';
+
+function AnimatedScore({ score }) {
+  const [displayed, setDisplayed] = useState(0);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (score === null) return;
+    const duration = 1000;
+    const start = performance.now();
+
+    function tick(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplayed(score * eased);
+      if (progress < 1) ref.current = requestAnimationFrame(tick);
+    }
+
+    ref.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(ref.current);
+  }, [score]);
+
+  if (score === null) return null;
+  return <span>{displayed.toFixed(1)}</span>;
+}
 
 export default function HealthScore() {
   const healthGoals = useHealthGoals();
@@ -23,131 +47,108 @@ export default function HealthScore() {
     return '#ef4444';
   };
 
-  const getScoreLabel = (rating) => {
-    if (rating >= 9) return 'Excellent';
-    if (rating >= 7) return 'Great';
-    if (rating >= 5) return 'Good';
-    if (rating >= 3) return 'Fair';
-    return 'Needs Work';
-  };
-
   const goalTypes = [
-    { value: 'expense', label: 'Spending', icon: TrendingDown, description: 'Track spending under a limit' },
-    { value: 'income', label: 'Earnings', icon: TrendingUp, description: 'Track income targets' },
+    { value: 'expense', label: 'Spending', icon: TrendingDown },
+    { value: 'income', label: 'Earnings', icon: TrendingUp },
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className="card p-6 gradient-border"
-    >
-      <div className="flex items-center justify-between mb-5">
+    <div className="glass-card p-5 animate-slide-up stagger-2">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <ShieldCheck size={16} className="text-primary-500" />
-          <h3 className="text-sm font-semibold">Budget Health</h3>
+          <div className="w-8 h-8 rounded-md bg-primary-500/10 flex items-center justify-center">
+            <ShieldCheck size={16} className="text-primary-500" />
+          </div>
+          <h3 className="text-base font-semibold">Budget Health</h3>
         </div>
         <button
           onClick={() => { setEditing(null); setShowForm(true); }}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-primary-500/10 text-primary-600 dark:text-primary-400 hover:bg-primary-500/20 transition-colors"
+          className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-sm font-semibold bg-primary-500/10 text-primary-600 dark:text-primary-400 hover:bg-primary-500/20 transition-all duration-200 hover:scale-105 active:scale-95"
         >
-          <Plus size={14} strokeWidth={2.5} />
+          <Plus size={12} strokeWidth={2.5} />
           Goal
         </button>
       </div>
 
       {healthGoals.length === 0 ? (
-        <div className="text-center py-6">
-          <span className="text-3xl mb-3 block">🎯</span>
-          <p className="text-sm font-semibold mb-1">Set your first health goal</p>
-          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Create spending or earning targets to track your budget health</p>
+        <div className="text-center py-5">
+          <p className="text-base font-medium mb-1.5">Set your first health goal</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Create spending or earning targets to track your budget health</p>
         </div>
       ) : (
         <>
-          {/* Overall Score */}
           {score !== null && (
-            <div className="flex items-center gap-4 mb-5 p-3 rounded-2xl" style={{ background: 'var(--bg)' }}>
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: getScoreColor(score) + '18' }}>
-                <span className="text-2xl font-extrabold" style={{ color: getScoreColor(score) }}>{score}</span>
+            <div className="flex items-center gap-3 mb-4 p-4 rounded-xl animate-scale-in glow-sm" style={{ background: 'var(--input-bg)' }}>
+              <div className="text-2xl font-extrabold tabular-nums" style={{ color: getScoreColor(score) }}>
+                <AnimatedScore score={score} />
               </div>
               <div>
-                <p className="text-lg font-bold" style={{ color: getScoreColor(score) }}>{getScoreLabel(score)}</p>
-                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Average of {healthGoals.length} goal{healthGoals.length !== 1 ? 's' : ''}</p>
+                <p className="text-sm font-semibold" style={{ color: getScoreColor(score) }}>
+                  {score >= 8 ? 'Excellent' : score >= 6 ? 'Good' : score >= 4 ? 'Fair' : 'Needs Work'}
+                </p>
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  Average of {healthGoals.length} goal{healthGoals.length !== 1 ? 's' : ''}
+                </p>
               </div>
             </div>
           )}
 
-          {/* Individual Goals */}
-          <div className="space-y-2.5">
-            <AnimatePresence>
-              {healthGoals.map((goal, i) => {
-                const actual = calculateGoalActual(goal, transactions);
-                const rating = calculateGoalRating(goal, actual);
-                const ratio = goal.targetAmount > 0 ? Math.min((actual / goal.targetAmount) * 100, 100) : 0;
-                const color = getScoreColor(rating);
-                const TypeIcon = goal.type === 'income' ? TrendingUp : TrendingDown;
+          <div className="space-y-2">
+            {healthGoals.map((goal, i) => {
+              const actual = calculateGoalActual(goal, transactions);
+              const rating = calculateGoalRating(goal, actual);
+              const ratio = goal.targetAmount > 0 ? Math.min((actual / goal.targetAmount) * 100, 100) : 0;
+              const color = getScoreColor(rating);
+              const TypeIcon = goal.type === 'income' ? TrendingUp : TrendingDown;
 
-                return (
-                  <motion.div
-                    key={goal.id}
-                    layout
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="flex items-center gap-3 p-3 rounded-xl"
-                    style={{ background: 'var(--bg)' }}
-                  >
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: color + '18' }}>
-                      <TypeIcon size={16} style={{ color }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs font-semibold truncate">{goal.name}</p>
-                        {goal.category && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-md font-medium" style={{ background: 'var(--surface)', color: 'var(--text-muted)' }}>
-                            {goal.category}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
-                          <motion.div
-                            className="h-full rounded-full"
-                            style={{ background: color }}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${ratio}%` }}
-                            transition={{ duration: 0.6 }}
-                          />
-                        </div>
-                        <span className="text-[10px] font-bold tabular-nums" style={{ color: 'var(--text-muted)' }}>
-                          {formatAmount(actual, { compact: true })} / {formatAmount(goal.targetAmount, { compact: true })}
+              return (
+                <div
+                  key={goal.id}
+                  className={`flex items-center gap-2.5 p-2.5 rounded-xl transition-all duration-200 hover:shadow-sm animate-slide-up stagger-${Math.min(i + 1, 6)}`}
+                  style={{ background: 'var(--input-bg)' }}
+                >
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: color + '15' }}>
+                    <TypeIcon size={16} style={{ color }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-medium truncate">{goal.name}</p>
+                      {goal.category && (
+                        <span className="tag" style={{ background: 'var(--surface-solid)', color: 'var(--text-muted)' }}>
+                          {goal.category}
                         </span>
-                      </div>
+                      )}
                     </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <span className="text-sm font-extrabold tabular-nums" style={{ color }}>{rating}</span>
-                      <div className="flex flex-col gap-0.5">
-                        <button
-                          onClick={() => { setEditing(goal); setShowForm(true); }}
-                          className="p-0.5 rounded hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors"
-                          style={{ color: 'var(--text-muted)' }}
-                        >
-                          <Pencil size={10} />
-                        </button>
-                        <button
-                          onClick={() => { if (confirm('Delete this goal?')) deleteHealthGoal(goal.id); }}
-                          className="p-0.5 rounded hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500 transition-colors"
-                        >
-                          <Trash2 size={10} />
-                        </button>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border-solid)' }}>
+                        <div className="h-full rounded-full bar-animate" style={{ background: color, width: `${ratio}%` }} />
                       </div>
+                      <span className="text-sm font-medium tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                        {formatAmount(actual, { compact: true })} / {formatAmount(goal.targetAmount, { compact: true })}
+                      </span>
                     </div>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <span className="text-sm font-bold tabular-nums" style={{ color }}>{rating}</span>
+                    <div className="flex flex-col gap-0.5">
+                      <button
+                        onClick={() => { setEditing(goal); setShowForm(true); }}
+                        className="p-0.5 rounded hover:bg-primary-500/10 transition-all duration-150 active:scale-95"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        <Pencil size={12} />
+                      </button>
+                      <button
+                        onClick={() => { if (confirm('Delete this goal?')) deleteHealthGoal(goal.id); }}
+                        className="p-0.5 rounded hover:bg-red-500/10 text-red-500 transition-all duration-150 active:scale-95"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </>
       )}
@@ -160,7 +161,7 @@ export default function HealthScore() {
           onClose={() => { setShowForm(false); setEditing(null); }}
         />
       )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -207,50 +208,38 @@ function HealthGoalForm({ editing, categories, goalTypes, onClose }) {
     onClose();
   };
 
-  const inputStyle = {
-    background: 'var(--bg)',
-    color: 'var(--text)',
-    borderColor: 'var(--border)',
-  };
-
   return (
     <Modal isOpen={true} onClose={onClose} title={editing ? 'Edit Health Goal' : 'New Health Goal'}>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div>
-          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Goal Type</label>
-          <div className="grid grid-cols-2 gap-2">
-            {goalTypes.map(({ value, label, icon: Icon, description }) => (
+          <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Goal Type</label>
+          <div className="grid grid-cols-2 gap-1.5">
+            {goalTypes.map(({ value, label, icon: Icon }) => (
               <button
                 key={value}
                 type="button"
                 onClick={() => { setType(value); setCategory(''); setName(''); setTargetAmount(''); }}
-                className={`flex items-center gap-2 p-3 rounded-xl border text-left transition-all ${
-                  type === value
-                    ? 'border-primary-500 bg-primary-500/10 ring-1 ring-primary-500/30'
-                    : ''
+                className={`flex items-center gap-2 p-2.5 rounded-xl text-left transition-all duration-200 active:scale-[0.97] ${
+                  type === value ? 'bg-primary-500/10' : 'hover:bg-primary-500/5'
                 }`}
-                style={{ borderColor: type === value ? undefined : 'var(--border)' }}
               >
                 <Icon size={16} style={{ color: type === value ? '#0d9488' : 'var(--text-muted)' }} />
-                <div>
-                  <p className="text-xs font-semibold">{label}</p>
-                  <p className="text-[9px]" style={{ color: 'var(--text-muted)' }}>{description}</p>
-                </div>
+                <span className="text-sm font-medium">{label}</span>
               </button>
             ))}
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Quick Presets</label>
+          <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Quick Presets</label>
           <div className="flex flex-wrap gap-1.5">
             {presets.map((preset) => (
               <button
                 key={preset.name}
                 type="button"
                 onClick={() => handlePreset(preset)}
-                className="px-2.5 py-1.5 rounded-lg text-[10px] font-semibold border hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-                style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+                className="px-2 py-1 rounded-lg text-sm font-medium hover:bg-primary-500/5 transition-all duration-200 hover:scale-105 active:scale-95"
+                style={{ color: 'var(--text-muted)' }}
               >
                 {preset.name}
               </button>
@@ -259,26 +248,24 @@ function HealthGoalForm({ editing, categories, goalTypes, onClose }) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Goal Name</label>
+          <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Goal Name</label>
           <input
             type="text"
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="e.g. Monthly food budget"
-            className="w-full px-4 py-3 rounded-2xl border outline-none focus:ring-2 focus:ring-primary-500/30 text-sm"
-            style={inputStyle}
+            className="input w-full"
             required
           />
         </div>
 
         {type === 'expense' && (
           <div>
-            <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Category (optional)</label>
+            <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Category (optional)</label>
             <select
               value={category}
               onChange={e => setCategory(e.target.value)}
-              className="w-full px-4 py-3 rounded-2xl border outline-none text-sm"
-              style={inputStyle}
+              className="input w-full"
             >
               <option value="">All expenses</option>
               {expenseCategories.map(c => (
@@ -289,11 +276,11 @@ function HealthGoalForm({ editing, categories, goalTypes, onClose }) {
         )}
 
         <div>
-          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
+          <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>
             {type === 'expense' ? 'Max Spending Target' : 'Income Target'}
           </label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold" style={{ color: 'var(--text-muted)' }}>{currency.symbol}</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>{currency.symbol}</span>
             <input
               type="number"
               min="0"
@@ -301,17 +288,13 @@ function HealthGoalForm({ editing, categories, goalTypes, onClose }) {
               value={targetAmount}
               onChange={e => setTargetAmount(e.target.value)}
               placeholder="0"
-              className="w-full pl-8 pr-3 py-3 rounded-2xl border outline-none focus:ring-2 focus:ring-primary-500/30 text-sm font-semibold"
-              style={inputStyle}
+              className="input w-full !pl-11 pr-3 font-semibold"
               required
             />
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold shadow-lg shadow-primary-600/30 active:scale-[0.98] transition-all"
-        >
+        <button type="submit" className="w-full py-3 btn-primary font-semibold">
           {editing ? 'Save Changes' : 'Create Goal'}
         </button>
       </form>

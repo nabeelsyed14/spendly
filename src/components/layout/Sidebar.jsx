@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, ArrowLeftRight, Lightbulb, Target, FileText, Settings } from 'lucide-react';
 import { useProfile } from '../../context/ProfileContext';
+import Avatar from '../ui/Avatar';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -12,46 +13,55 @@ const navItems = [
 ];
 
 export default function Sidebar() {
-  const { userName, getGreeting } = useProfile();
+  const { userName, avatarPhoto } = useProfile();
 
   return (
     <aside
-      className="hidden md:flex flex-col w-[260px] h-screen sticky top-0 p-3 border-r"
-      style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
+      className="hidden md:flex flex-col w-[240px] h-screen sticky top-0 animate-slide-down"
+      style={{ background: 'var(--surface-solid)', borderRight: '1px solid var(--border-solid)', borderRadius: 0 }}
     >
-      <div className="flex items-center gap-3 mb-8 px-3 py-2">
-        <img src="/favicon.svg" alt="Spendly" className="w-9 h-9" />
-        <span className="text-xl font-extrabold tracking-tight gradient-text">Spendly</span>
+      <div className="flex items-center gap-2.5 px-5 py-5">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md">
+          <img src="/favicon.svg" alt="" className="w-10 h-10" />
+        </div>
+        <span className="text-lg font-bold tracking-tight">Spendly</span>
       </div>
 
-      <nav className="flex flex-col gap-1 flex-1">
+      <nav className="flex flex-col gap-1 flex-1 p-4">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+              `group relative flex items-center gap-2.5 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 active:scale-[0.97] ${
                 isActive
-                  ? 'bg-gradient-to-r from-primary-600 to-primary-500 text-white shadow-lg shadow-primary-600/30'
-                  : 'hover:bg-primary-50/80 dark:hover:bg-white/[0.04]'
+                  ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 glow-sm'
+                  : 'hover:bg-primary-500/5'
               }`
             }
             style={({ isActive }) => !isActive ? { color: 'var(--text-muted)' } : {}}
           >
             {({ isActive }) => (
               <>
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-                  isActive ? 'bg-white/20' : 'bg-primary-50 dark:bg-white/[0.06] group-hover:bg-primary-100 dark:group-hover:bg-white/[0.1]'
-                }`}>
-                  <Icon size={17} strokeWidth={isActive ? 2.2 : 1.8} />
-                </div>
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-primary-500" />
+                )}
+                <Icon size={20} strokeWidth={isActive ? 2 : 1.8} />
                 {label}
               </>
             )}
           </NavLink>
         ))}
       </nav>
+
+      <div className="p-4 border-t flex items-center gap-2.5" style={{ borderColor: 'var(--border-solid)' }}>
+        <Avatar name={userName || 'User'} photo={avatarPhoto} size={36} />
+        <div className="min-w-0">
+          <p className="text-sm font-semibold truncate">{userName || 'User'}</p>
+          <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>Personal</p>
+        </div>
+      </div>
     </aside>
   );
 }
@@ -61,30 +71,24 @@ export function MobileNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t"
-      style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderColor: 'var(--glass-border)' }}
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40"
+      style={{ background: 'var(--surface-solid)', borderTop: '1px solid var(--border-solid)', borderRadius: 0 }}
     >
-      <div className="flex items-center justify-around px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <div className="flex items-center justify-around px-2 pt-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))]">
         {items.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] font-medium transition-all ${
+              `flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 active:scale-95 ${
                 isActive ? 'text-primary-600 dark:text-primary-400' : ''
               }`
             }
             style={({ isActive }) => !isActive ? { color: 'var(--text-muted)' } : {}}
           >
-            {({ isActive }) => (
-              <>
-                <div className={`p-1.5 rounded-xl transition-colors ${isActive ? 'bg-primary-50 dark:bg-primary-900/30' : ''}`}>
-                  <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
-                </div>
-                <span>{label}</span>
-              </>
-            )}
+            <Icon size={22} strokeWidth={1.8} />
+            <span>{label}</span>
           </NavLink>
         ))}
       </div>

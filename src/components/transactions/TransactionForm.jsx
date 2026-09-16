@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
+import * as LucideIcons from 'lucide-react';
 import Modal from '../ui/Modal';
 import { useCategories } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -40,39 +41,38 @@ export default function TransactionForm({ onSave, editing = null, onClose }) {
     }
   };
 
-  const inputStyle = {
-    background: 'var(--bg)',
-    color: 'var(--text)',
-    borderColor: 'var(--border)',
+  const getIcon = (iconName) => {
+    const Icon = LucideIcons[iconName] || LucideIcons.MoreHorizontal;
+    return <Icon size={18} />;
   };
 
   return (
     <Modal isOpen={true} onClose={onClose} title={editing ? 'Edit Transaction' : 'Add Transaction'}>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'var(--bg)' }}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="animate-slide-up stagger-1 flex gap-1.5 p-1 rounded-xl" style={{ background: 'var(--input-bg)' }}>
           {['expense', 'income'].map(t => (
             <button
               key={t}
               type="button"
               onClick={() => { setType(t); setCategory(''); }}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+              className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-[0.97] capitalize ${
                 type === t
                   ? t === 'expense'
-                    ? 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-lg shadow-red-500/25'
-                    : 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/25'
-                  : 'text-sm'
+                    ? 'bg-red-500 text-white shadow-md'
+                    : 'bg-emerald-500 text-white shadow-md'
+                  : ''
               }`}
               style={type !== t ? { color: 'var(--text-muted)' } : {}}
             >
-              {t === 'expense' ? '💸 Expense' : '💰 Income'}
+              {t}
             </button>
           ))}
         </div>
 
-        <div>
-          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Amount</label>
+        <div className="animate-slide-up stagger-2">
+          <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Amount</label>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold" style={{ color: 'var(--text-muted)' }}>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>
               {currency.symbol}
             </span>
             <input
@@ -82,117 +82,103 @@ export default function TransactionForm({ onSave, editing = null, onClose }) {
               value={amount}
               onChange={e => setAmount(e.target.value)}
               placeholder="0.00"
-              className="w-full pl-10 pr-4 py-3.5 rounded-2xl border text-xl font-bold outline-none focus:ring-2 focus:ring-primary-500/30 transition-all"
-              style={inputStyle}
+              className="input w-full !pl-11 pr-3 py-3 text-lg font-bold"
               required
             />
           </div>
         </div>
 
         {type === 'expense' && (
-          <div>
-            <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Spending Source</label>
-            <div className="flex gap-2 p-1 rounded-2xl" style={{ background: 'var(--bg)' }}>
+          <div className="animate-slide-up stagger-3">
+            <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Spending Source</label>
+            <div className="flex gap-1.5 p-1 rounded-xl" style={{ background: 'var(--input-bg)' }}>
               {[
-                { value: 'income', label: 'From Income', emoji: '💵' },
-                { value: 'savings', label: 'From Savings', emoji: '🏦' },
+                { value: 'income', label: 'From Income' },
+                { value: 'savings', label: 'From Savings' },
               ].map(s => (
                 <button
                   key={s.value}
                   type="button"
                   onClick={() => setSource(s.value)}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-[0.97] ${
                     source === s.value
                       ? s.value === 'income'
-                        ? 'bg-gradient-to-r from-primary-600 to-primary-500 text-white shadow-lg shadow-primary-600/25'
-                        : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/25'
-                      : 'text-sm'
+                        ? 'bg-primary-500 text-white shadow-md'
+                        : 'bg-amber-500 text-white shadow-md'
+                      : ''
                   }`}
                   style={source !== s.value ? { color: 'var(--text-muted)' } : {}}
                 >
-                  {s.emoji} {s.label}
+                  {s.label}
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        <div>
-          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Category</label>
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+        <div className="animate-slide-up stagger-4">
+          <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Category</label>
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
             {filtered.map(c => (
               <button
                 key={c.name}
                 type="button"
                 onClick={() => setCategory(c.name)}
-                className={`group flex flex-col items-center gap-1.5 p-2.5 rounded-2xl text-[10px] font-medium transition-all duration-200 border ${
-                  category === c.name ? 'ring-2 ring-primary-500 scale-[1.03] shadow-md' : 'card-hover'
+                className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 ${
+                  category === c.name ? 'bg-primary-500/10 glow-sm' : 'hover:bg-primary-500/5'
                 }`}
-                style={{ ...inputStyle, borderColor: category === c.name ? c.color + '60' : 'var(--border)' }}
               >
                 <span
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-base transition-transform group-hover:scale-110"
-                  style={{ background: c.color + '18' }}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ background: c.color + '15', color: c.color }}
                 >
-                  {getCategoryEmoji(c.icon)}
+                  {getIcon(c.icon)}
                 </span>
-                <span className="truncate w-full text-center leading-tight">{c.name}</span>
+                <span className="w-full text-center leading-tight text-xs">{c.name}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Date</label>
+        <div className="animate-slide-up stagger-5">
+          <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Date</label>
           <input
             type="date"
             value={date}
             onChange={e => setDate(e.target.value)}
-            className="w-full px-4 py-3 rounded-2xl border outline-none focus:ring-2 focus:ring-primary-500/30 transition-all text-sm"
-            style={inputStyle}
+            className="input w-full"
           />
         </div>
 
-        <div>
-          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Description</label>
+        <div className="animate-slide-up stagger-5">
+          <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Description</label>
           <input
             type="text"
             value={description}
             onChange={e => setDescription(e.target.value)}
             placeholder="What was this for?"
-            className="w-full px-4 py-3 rounded-2xl border outline-none focus:ring-2 focus:ring-primary-500/30 transition-all text-sm"
-            style={inputStyle}
+            className="input w-full"
           />
         </div>
 
-        <div>
-          <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Notes (optional)</label>
+        <div className="animate-slide-up stagger-6">
+          <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Notes (optional)</label>
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
             placeholder="Any additional details..."
             rows={2}
-            className="w-full px-4 py-3 rounded-2xl border outline-none focus:ring-2 focus:ring-primary-500/30 transition-all resize-none text-sm"
-            style={inputStyle}
+            className="input w-full resize-none"
           />
         </div>
 
         <button
           type="submit"
-          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold shadow-lg shadow-primary-600/30 hover:shadow-xl hover:shadow-primary-600/40 transition-all active:scale-[0.98]"
+          className="w-full py-3 btn-primary font-semibold"
         >
           {editing ? 'Save Changes' : 'Add Transaction'}
         </button>
       </form>
     </Modal>
   );
-}
-
-function getCategoryEmoji(iconName) {
-  const map = {
-    UtensilsCrossed: '🍔', Home: '🏠', Car: '🚗', ShoppingCart: '🛒', Film: '🎬',
-    ShoppingBag: '👕', Heart: '💊', CreditCard: '📱', BookOpen: '📚', Gift: '🎁',
-    Zap: '⚡', MoreHorizontal: '💰', Briefcase: '💼', TrendingUp: '📈', Laptop: '💻',
-  };
-  return map[iconName] || '📌';
 }

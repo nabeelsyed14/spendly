@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Pencil, Trash2, Search, Plus } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import TransactionForm from './TransactionForm';
 import { useTransactions, useCategories, addTransaction, updateTransaction, deleteTransaction } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -33,17 +33,13 @@ export default function TransactionList() {
 
   const getCategoryColor = (catName) => {
     const cat = categories.find(c => c.name === catName);
-    return cat?.color || '#71717a';
+    return cat?.color || '#737373';
   };
 
-  const getCategoryEmoji = (catName) => {
+  const getCategoryIcon = (catName) => {
     const cat = categories.find(c => c.name === catName);
-    const map = {
-      UtensilsCrossed: '🍔', Home: '🏠', Car: '🚗', ShoppingCart: '🛒', Film: '🎬',
-      ShoppingBag: '👕', Heart: '💊', CreditCard: '📱', BookOpen: '📚', Gift: '🎁',
-      Zap: '⚡', MoreHorizontal: '💰', Briefcase: '💼', TrendingUp: '📈', Laptop: '💻',
-    };
-    return map[cat?.icon] || '📌';
+    const Icon = LucideIcons[cat?.icon] || LucideIcons.MoreHorizontal;
+    return <Icon size={18} />;
   };
 
   const handleSave = async (data) => {
@@ -62,35 +58,28 @@ export default function TransactionList() {
     }
   };
 
-  const inputStyle = {
-    background: 'var(--bg)',
-    color: 'var(--text)',
-    borderColor: 'var(--border)',
-  };
-
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3">
+    <div className="space-y-4 animate-fade-in">
+      <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search transactions..."
-            className="w-full pl-10 pr-4 py-3 rounded-2xl border outline-none focus:ring-2 focus:ring-primary-500/30 text-sm transition-all"
-            style={inputStyle}
+            className="input w-full !pl-9 pr-3 py-2.5"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 p-1 rounded-xl" style={{ background: 'var(--input-bg)' }}>
           {['all', 'expense', 'income'].map(t => (
             <button
               key={t}
               onClick={() => setFilterType(t)}
-              className={`px-4 py-3 rounded-2xl text-sm font-semibold capitalize transition-all border ${
-                filterType === t ? 'bg-gradient-to-r from-primary-600 to-primary-500 text-white shadow-lg shadow-primary-600/25' : ''
+              className={`px-3 py-2 rounded-lg text-sm font-semibold capitalize transition-all duration-200 active:scale-[0.97] ${
+                filterType === t ? 'bg-primary-500 text-white shadow-md' : ''
               }`}
-              style={filterType !== t ? inputStyle : {}}
+              style={filterType !== t ? { color: 'var(--text-muted)' } : {}}
             >
               {t}
             </button>
@@ -98,7 +87,7 @@ export default function TransactionList() {
         </div>
         <button
           onClick={() => { setEditing(null); setShowForm(true); }}
-          className="flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-primary-600 to-primary-500 text-white text-sm font-bold shadow-lg shadow-primary-600/25 hover:shadow-xl transition-all active:scale-[0.98]"
+          className="flex items-center justify-center gap-1.5 px-4 py-3 btn-primary text-sm"
         >
           <Plus size={18} strokeWidth={2.5} />
           <span className="hidden sm:inline">Add</span>
@@ -106,85 +95,75 @@ export default function TransactionList() {
       </div>
 
       {Object.keys(grouped).length === 0 && (
-        <div className="text-center py-20">
-          <span className="text-5xl mb-4 block">💸</span>
-          <p className="font-semibold text-lg mb-1">No transactions yet</p>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Tap "Add" to get started tracking</p>
+        <div className="text-center py-16">
+          <div className="w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center" style={{ background: 'var(--input-bg)' }}>
+            <Plus size={20} style={{ color: 'var(--text-muted)' }} />
+          </div>
+          <p className="font-semibold mb-1.5">No transactions yet</p>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Tap "Add" to get started</p>
         </div>
       )}
 
-      <div className="space-y-5">
-        {Object.entries(grouped).map(([dateKey, items]) => {
+      <div className="space-y-4">
+        {Object.entries(grouped).map(([dateKey, items], groupIdx) => {
           const dayTotal = items.reduce((s, t) => s + (t.type === 'expense' ? -t.amount : t.amount), 0);
           return (
-            <div key={dateKey}>
-              <div className="flex items-center justify-between mb-2 px-1">
-                <p className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
+            <div key={dateKey} className={`animate-slide-up stagger-${Math.min(groupIdx + 1, 6)}`}>
+              <div className="flex items-center justify-between mb-1.5 px-1">
+                <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
                   {format(new Date(dateKey), 'EEEE, MMM d')}
                 </p>
-                <p className={`text-xs font-bold tabular-nums ${dayTotal >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                <p className={`text-sm font-semibold tabular-nums ${dayTotal >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                   {dayTotal >= 0 ? '+' : ''}{formatAmount(dayTotal)}
                 </p>
               </div>
-              <div className="space-y-2">
-                <AnimatePresence>
-                  {items.map((t, i) => (
-                    <motion.div
-                      key={t.id}
-                      layout
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, x: -50 }}
-                      transition={{ delay: i * 0.03 }}
-                      className="group relative flex items-center gap-3 p-3.5 rounded-2xl card card-hover overflow-hidden"
-                      style={{ background: 'var(--surface)' }}
+              <div className="space-y-1">
+                {items.map(t => (
+                  <div
+                    key={t.id}
+                    className="group card p-4 flex items-center gap-3"
+                  >
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
+                      style={{ background: getCategoryColor(t.category) + '12', color: getCategoryColor(t.category) }}
                     >
-                      <div
-                        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
-                        style={{ background: getCategoryColor(t.category) }}
-                      />
-                      <span
-                        className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 ml-1"
-                        style={{ background: getCategoryColor(t.category) + '15' }}
-                      >
-                        {getCategoryEmoji(t.category)}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-semibold truncate">{t.category}</p>
-                          {t.type === 'expense' && t.source === 'savings' && (
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 flex-shrink-0">
-                              savings
-                            </span>
-                          )}
-                        </div>
-                        {t.description && (
-                          <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{t.description}</p>
+                      {getCategoryIcon(t.category)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-base font-medium truncate">{t.category}</p>
+                        {t.type === 'expense' && t.source === 'savings' && (
+                          <span className="tag bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                            savings
+                          </span>
                         )}
                       </div>
-                      <div className="text-right flex-shrink-0 mr-1">
-                        <p className={`text-sm font-bold tabular-nums ${t.type === 'income' ? 'text-emerald-500' : 'text-red-500'}`}>
-                          {t.type === 'income' ? '+' : '-'}{formatAmount(t.amount)}
-                        </p>
-                      </div>
-                      <div className="flex gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => { setEditing(t); setShowForm(true); }}
-                          className="p-1.5 rounded-lg transition-colors hover:bg-primary-50 dark:hover:bg-primary-900/30"
-                          style={{ color: 'var(--text-muted)' }}
-                        >
-                          <Pencil size={13} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(t.id)}
-                          className="p-1.5 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+                      {t.description && (
+                        <p className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>{t.description}</p>
+                      )}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className={`text-sm font-semibold tabular-nums ${t.type === 'income' ? 'text-emerald-500' : 'text-red-500'}`}>
+                        {t.type === 'income' ? '+' : '-'}{formatAmount(t.amount)}
+                      </p>
+                    </div>
+                    <div className="flex gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <button
+                        onClick={() => { setEditing(t); setShowForm(true); }}
+                        className="p-1.5 rounded-lg transition-all duration-150 hover:bg-primary-500/10 active:scale-95"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(t.id)}
+                        className="p-1.5 rounded-lg transition-all duration-150 hover:bg-red-500/10 text-red-500 active:scale-95"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           );
