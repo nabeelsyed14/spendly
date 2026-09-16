@@ -60,6 +60,7 @@ export default function TransactionList() {
 
   return (
     <div className="space-y-4 animate-fade-in">
+      <h2 className="text-lg font-bold">Transactions</h2>
       <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
         <div className="relative flex-1">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />

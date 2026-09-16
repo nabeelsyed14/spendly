@@ -180,6 +180,7 @@ function TrendInsight() {
 export default function InsightsPage({ onOpenChat }) {
   return (
     <div className="space-y-3">
+      <h2 className="text-lg font-bold">Insights</h2>
       {onOpenChat && (
         <button
           onClick={onOpenChat}
