@@ -74,21 +74,21 @@ export function MobileNav() {
       className="md:hidden fixed bottom-0 left-0 right-0 z-40"
       style={{ background: 'var(--surface-solid)', borderTop: '1px solid var(--border-solid)', borderRadius: 0 }}
     >
-      <div className="flex items-center justify-around px-2 pt-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))]">
+      <div className="flex items-center justify-around px-1 pt-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))]">
         {items.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-sm font-medium transition-all duration-200 active:scale-95 ${
+              `flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-[11px] font-medium transition-all duration-200 active:scale-95 min-w-0 ${
                 isActive ? 'text-primary-600 dark:text-primary-400' : ''
               }`
             }
             style={({ isActive }) => !isActive ? { color: 'var(--text-muted)' } : {}}
           >
             <Icon size={22} strokeWidth={1.8} />
-            <span>{label}</span>
+            <span className="truncate max-w-[3.5rem] text-center">{label}</span>
           </NavLink>
         ))}
       </div>

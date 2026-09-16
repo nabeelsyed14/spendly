@@ -36,10 +36,10 @@ export default function GoalsPage() {
         </div>
         <button
           onClick={() => { setEditing(null); setShowForm(true); }}
-          className="flex items-center gap-1.5 px-3 py-2.5 btn-primary text-sm"
+          className="flex items-center gap-1.5 px-3 py-2 btn-primary text-sm sm:py-2.5"
         >
           <Plus size={18} strokeWidth={2.5} />
-          New Goal
+          <span className="hidden sm:inline">New Goal</span>
         </button>
       </div>
 

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { X, Send, Sparkles, Loader2 } from 'lucide-react';
 import { useTransactions } from '../../hooks/useData';
 import { chatWithAI, getRequestsRemaining } from '../../lib/ai';
@@ -126,7 +127,9 @@ function renderMarkdown(text) {
 }
 
 export default function ChatDrawer({ isOpen, onClose, onOpen }) {
+  const location = useLocation();
   const transactions = useTransactions();
+  const hideFab = ['/settings', '/goals'].includes(location.pathname);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -138,12 +141,6 @@ export default function ChatDrawer({ isOpen, onClose, onOpen }) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isOpen]);
-
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      setTimeout(() => inputRef.current?.focus(), 200);
-    }
-  }, [isOpen]);
 
   const sendMessage = async (customInput) => {
     const text = customInput || input.trim();
@@ -174,7 +171,7 @@ export default function ChatDrawer({ isOpen, onClose, onOpen }) {
 
   return (
     <>
-      {!isOpen && (
+      {!isOpen && !hideFab && (
         <button
           onClick={onOpen}
           className="fixed bottom-20 md:bottom-6 right-4 z-40 w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl active:scale-95 animate-scale-in"

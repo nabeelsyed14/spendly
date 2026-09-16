@@ -87,7 +87,7 @@ export default function TransactionList() {
         </div>
         <button
           onClick={() => { setEditing(null); setShowForm(true); }}
-          className="flex items-center justify-center gap-1.5 px-4 py-3 btn-primary text-sm"
+          className="flex items-center justify-center gap-1.5 px-4 py-2.5 btn-primary text-sm sm:py-3"
         >
           <Plus size={18} strokeWidth={2.5} />
           <span className="hidden sm:inline">Add</span>
