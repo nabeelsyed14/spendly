@@ -25,26 +25,29 @@ Spendly stores all financial data in the browser's IndexedDB — nothing leaves 
 
 ```mermaid
 flowchart TB
-    subgraph APP["React SPA (Vite)"]
-        direction TB
+    SPA["React SPA (Vite)"]
 
-        subgraph PAGES[" "]
-            direction LR
-            Dashboard["Dashboard<br/><br/>Balance<br/>Categories<br/>Health"]
-            Insights["Insights<br/><br/>Velocity<br/>Anomalies<br/>Habits"]
-            Reports["Reports<br/><br/>Categories<br/>Trends<br/>Monthly"]
-        end
-
-        DB["Dexie (IndexedDB)<br/><br/>transactions  │  healthGoals  │  settings"]
-
-        Chat["ChatDrawer<br/>(AI chat UI)"]
-        API["Vercel Serverless<br/>/api/groq (proxy)"]
-
-        Dashboard --> DB
-        Insights --> DB
-        Reports --> DB
-        Chat --> API
+    subgraph UI["Application UI"]
+        Dashboard["Dashboard<br/>• Balance<br/>• Categories<br/>• Health"]
+        Insights["Insights<br/>• Velocity<br/>• Anomalies<br/>• Habits"]
+        Reports["Reports<br/>• Categories<br/>• Trends<br/>• Monthly"]
     end
+
+    DB["Dexie (IndexedDB)<br/>transactions • healthGoals • settings"]
+
+    Chat["ChatDrawer<br/>(AI chat UI)"]
+    API["Vercel Serverless<br/>/api/groq (proxy)"]
+
+    SPA --> Dashboard
+    SPA --> Insights
+    SPA --> Reports
+
+    Dashboard --> DB
+    Insights --> DB
+    Reports --> DB
+
+    Chat --> API
+
 ```
 
 ## Tech Stack
