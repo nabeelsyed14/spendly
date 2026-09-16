@@ -88,7 +88,7 @@ export function MobileNav() {
             style={({ isActive }) => !isActive ? { color: 'var(--text-muted)' } : {}}
           >
             <Icon size={22} strokeWidth={1.8} />
-            <span className="truncate max-w-[3.5rem] text-center">{label}</span>
+            <span className="text-center leading-tight">{label}</span>
           </NavLink>
         ))}
       </div>

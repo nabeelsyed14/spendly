@@ -74,7 +74,7 @@ export default function App() {
             <div className="floating-orb floating-orb-3" />
 
             <CurrencyPicker />
-            <ChatDrawer isOpen={chatOpen} onClose={() => setChatOpen(false)} onOpen={() => setChatOpen(true)} />
+            <ChatDrawer isOpen={chatOpen} onClose={() => setChatOpen(false)} />
 
             <PageWrapper>
               <AnimatedRoutes onOpenChat={() => setChatOpen(true)} />

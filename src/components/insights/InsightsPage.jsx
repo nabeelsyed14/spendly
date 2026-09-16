@@ -180,16 +180,10 @@ function TrendInsight() {
 export default function InsightsPage({ onOpenChat }) {
   return (
     <div className="space-y-3">
-      <VelocityInsight />
-      <ProjectionInsight />
-      <HabitInsight />
-      <TrendInsight />
-      <AnomalyInsight />
-
       {onOpenChat && (
         <button
           onClick={onOpenChat}
-          className="w-full glass-card p-4 flex items-center gap-3 group cursor-pointer transition-all duration-300 hover:shadow-lg hover:glow-sm animate-slide-up stagger-6 active:scale-[0.98]"
+          className="w-full glass-card p-4 flex items-center gap-3 group cursor-pointer transition-all duration-300 hover:shadow-lg hover:glow-sm animate-slide-up active:scale-[0.98]"
         >
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-200">
             <Sparkles size={20} className="text-white" />
@@ -200,6 +194,12 @@ export default function InsightsPage({ onOpenChat }) {
           </div>
         </button>
       )}
+
+      <VelocityInsight />
+      <ProjectionInsight />
+      <HabitInsight />
+      <TrendInsight />
+      <AnomalyInsight />
     </div>
   );
 }

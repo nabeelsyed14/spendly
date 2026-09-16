@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import { X, Send, Sparkles, Loader2 } from 'lucide-react';
 import { useTransactions } from '../../hooks/useData';
 import { chatWithAI, getRequestsRemaining } from '../../lib/ai';
@@ -126,10 +125,8 @@ function renderMarkdown(text) {
   return elements;
 }
 
-export default function ChatDrawer({ isOpen, onClose, onOpen }) {
-  const location = useLocation();
+export default function ChatDrawer({ isOpen, onClose }) {
   const transactions = useTransactions();
-  const hideFab = ['/settings', '/goals'].includes(location.pathname);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -171,16 +168,6 @@ export default function ChatDrawer({ isOpen, onClose, onOpen }) {
 
   return (
     <>
-      {!isOpen && !hideFab && (
-        <button
-          onClick={onOpen}
-          className="fixed bottom-20 md:bottom-6 right-4 z-40 w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl active:scale-95 animate-scale-in"
-          style={{ boxShadow: '0 4px 20px rgba(13,148,136,0.35)' }}
-        >
-          <Sparkles size={20} />
-        </button>
-      )}
-
       {isOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
