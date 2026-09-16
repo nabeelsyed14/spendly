@@ -23,32 +23,34 @@ Spendly stores all financial data in the browser's IndexedDB — nothing leaves 
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────┐
-│               React SPA (Vite)              │
-│  ┌─────────┐  ┌──────────┐  ┌────────────┐ │
-│  │Dashboard │  │Insights  │  │Reports     │ │
-│  │Balance   │  │Velocity  │  │Categories  │ │
-│  │Categories│  │Anomalies │  │Trends      │ │
-│  │Health    │  │Habits    │  │Monthly     │ │
-│  └────┬─────┘  └────┬─────┘  └─────┬──────┘ │
-│       │              │              │         │
-│  ┌────┴──────────────┴──────────────┴──────┐ │
-│  │          Dexie (IndexedDB)               │ │
-│  │  transactions │ healthGoals │ settings   │ │
-│  └─────────────────────────────────────────┘ │
-│                                              │
-│  ┌──────────────┐  ┌───────────────────────┐ │
-│  │ ChatDrawer   │  │ Vercel Serverless     │ │
-│  │ (AI chat UI) │──│ /api/groq (proxy)     │ │
-│  └──────────────┘  └───────────────────────┘ │
-└─────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph APP["React SPA (Vite)"]
+        direction TB
+
+        subgraph PAGES[" "]
+            direction LR
+            Dashboard["Dashboard<br/><br/>Balance<br/>Categories<br/>Health"]
+            Insights["Insights<br/><br/>Velocity<br/>Anomalies<br/>Habits"]
+            Reports["Reports<br/><br/>Categories<br/>Trends<br/>Monthly"]
+        end
+
+        DB["Dexie (IndexedDB)<br/><br/>transactions  │  healthGoals  │  settings"]
+
+        Chat["ChatDrawer<br/>(AI chat UI)"]
+        API["Vercel Serverless<br/>/api/groq (proxy)"]
+
+        Dashboard --> DB
+        Insights --> DB
+        Reports --> DB
+        Chat --> API
+    end
 ```
 
 ## Tech Stack
 
 | Layer | Technology | Purpose |
-|-------|-----------|---------|
+|---|---|---|
 | Frontend | React 19 + Vite | SPA with fast HMR |
 | Styling | Tailwind CSS v4 | Utility-first design system |
 | Database | Dexie.js (IndexedDB) | Local-first data persistence |
