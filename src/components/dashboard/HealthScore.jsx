@@ -53,19 +53,19 @@ export default function HealthScore() {
   ];
 
   return (
-    <div className="glass-card p-5 animate-slide-up stagger-2">
+    <div className="glass-card p-6 animate-slide-up stagger-2">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-md bg-primary-500/10 flex items-center justify-center">
-            <ShieldCheck size={16} className="text-primary-500" />
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-primary-500/10 flex items-center justify-center">
+            <ShieldCheck size={18} className="text-primary-500" />
           </div>
-          <h3 className="text-base font-semibold">Budget Health</h3>
+          <h3 className="text-lg font-bold">Budget Health</h3>
         </div>
         <button
           onClick={() => { setEditing(null); setShowForm(true); }}
-          className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-sm font-semibold bg-primary-500/10 text-primary-600 dark:text-primary-400 hover:bg-primary-500/20 transition-all duration-200 hover:scale-105 active:scale-95"
+          className="flex items-center gap-1 px-3 py-2 rounded-full text-sm font-bold bg-primary-500/10 text-primary-600 dark:text-primary-400 hover:bg-primary-500/20 transition-all duration-200 hover:scale-105 active:scale-95"
         >
-          <Plus size={12} strokeWidth={2.5} />
+          <Plus size={13} strokeWidth={2.5} />
           Goal
         </button>
       </div>
@@ -78,8 +78,8 @@ export default function HealthScore() {
       ) : (
         <>
           {score !== null && (
-            <div className="flex items-center gap-3 mb-4 p-4 rounded-xl animate-scale-in glow-sm" style={{ background: 'var(--input-bg)' }}>
-              <div className="text-2xl font-extrabold tabular-nums" style={{ color: getScoreColor(score) }}>
+            <div className="flex items-center gap-3 mb-4 p-4 rounded-2xl animate-scale-in glow-sm" style={{ background: 'var(--input-bg)' }}>
+              <div className="text-3xl font-extrabold tabular-nums" style={{ color: getScoreColor(score) }}>
                 <AnimatedScore score={score} />
               </div>
               <div>
@@ -104,7 +104,7 @@ export default function HealthScore() {
               return (
                 <div
                   key={goal.id}
-                  className={`flex items-center gap-2.5 p-2.5 rounded-xl transition-all duration-200 hover:shadow-sm animate-slide-up stagger-${Math.min(i + 1, 6)}`}
+                  className={`flex items-center gap-2.5 p-3 rounded-2xl transition-all duration-200 hover:shadow-sm animate-slide-up stagger-${Math.min(i + 1, 6)}`}
                   style={{ background: 'var(--input-bg)' }}
                 >
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: color + '15' }}>
@@ -223,7 +223,7 @@ function HealthGoalForm({ editing, categories, goalTypes, onClose }) {
                   type === value ? 'bg-primary-500/10' : 'hover:bg-primary-500/5'
                 }`}
               >
-                <Icon size={16} style={{ color: type === value ? '#0d9488' : 'var(--text-muted)' }} />
+                <Icon size={16} style={{ color: type === value ? '#6d28d9' : 'var(--text-muted)' }} />
                 <span className="text-sm font-medium">{label}</span>
               </button>
             ))}

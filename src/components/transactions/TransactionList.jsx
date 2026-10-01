@@ -60,7 +60,7 @@ export default function TransactionList() {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <h2 className="text-lg font-bold">Transactions</h2>
+      <h2 className="text-xl font-black">Transactions</h2>
       <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
         <div className="relative flex-1">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
@@ -72,12 +72,12 @@ export default function TransactionList() {
             className="input w-full !pl-9 pr-3 py-2.5"
           />
         </div>
-        <div className="flex gap-1.5 p-1 rounded-xl" style={{ background: 'var(--input-bg)' }}>
+        <div className="flex gap-1.5 p-1 rounded-2xl" style={{ background: 'var(--input-bg)' }}>
           {['all', 'expense', 'income'].map(t => (
             <button
               key={t}
               onClick={() => setFilterType(t)}
-              className={`px-3 py-2 rounded-lg text-sm font-semibold capitalize transition-all duration-200 active:scale-[0.97] ${
+              className={`px-4 py-2 rounded-xl text-sm font-bold capitalize transition-all duration-200 active:scale-[0.97] ${
                 filterType === t ? 'bg-primary-500 text-white shadow-md' : ''
               }`}
               style={filterType !== t ? { color: 'var(--text-muted)' } : {}}
@@ -88,7 +88,7 @@ export default function TransactionList() {
         </div>
         <button
           onClick={() => { setEditing(null); setShowForm(true); }}
-          className="flex items-center justify-center gap-1.5 px-4 py-2.5 btn-primary text-sm sm:py-3"
+          className="flex items-center justify-center gap-1.5 px-5 py-2.5 btn-primary text-sm sm:py-3"
         >
           <Plus size={18} strokeWidth={2.5} />
           <span className="hidden sm:inline">Add</span>
@@ -125,14 +125,14 @@ export default function TransactionList() {
                     className="group card p-4 flex items-center gap-3"
                   >
                     <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
                       style={{ background: getCategoryColor(t.category) + '12', color: getCategoryColor(t.category) }}
                     >
                       {getCategoryIcon(t.category)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <p className="text-base font-medium truncate">{t.category}</p>
+                        <p className="text-base font-semibold truncate">{t.category}</p>
                         {t.type === 'expense' && t.source === 'savings' && (
                           <span className="tag bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                             savings

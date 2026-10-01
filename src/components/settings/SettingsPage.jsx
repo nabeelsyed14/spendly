@@ -36,10 +36,10 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <h2 className="text-lg font-bold">Settings</h2>
+      <h2 className="text-xl font-black">Settings</h2>
 
-      <div className="space-y-2">
-        <SettingCard icon={User} label="Your Name" color="#0d9488"
+      <div className="space-y-2.5">
+        <SettingCard icon={User} label="Your Name" color="#6d28d9"
           action={
             <input
               type="text"
@@ -52,7 +52,7 @@ export default function SettingsPage() {
         />
 
         <div className="card p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#0d9488' + '12' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#6d28d9' + '12' }}>
             <Avatar name={userName || 'User'} photo={avatarPhoto} size={32} />
           </div>
           <div className="flex-1 min-w-0">
@@ -72,7 +72,7 @@ export default function SettingsPage() {
           icon={theme === 'dark' ? Moon : Sun}
           label="Theme"
           description={`Currently using ${theme} mode`}
-          color="#0d9488"
+          color="#6d28d9"
           action={
             <button onClick={toggleTheme} className="px-3 py-1.5 btn-primary text-sm">
               Switch to {theme === 'light' ? 'Dark' : 'Light'}
@@ -91,7 +91,7 @@ export default function SettingsPage() {
               </span>
             </span>
           }
-          color="#0d9488"
+          color="#6d28d9"
           action={
             <select
               value={currency.code}
@@ -105,7 +105,7 @@ export default function SettingsPage() {
           }
         />
 
-        <SettingCard icon={Download} label="Export Data" color="#0d9488"
+        <SettingCard icon={Download} label="Export Data" color="#6d28d9"
           action={
             <button onClick={handleExport} className="p-2 rounded-xl border transition-all duration-200 hover:bg-primary-500/5 hover:scale-105 active:scale-95" style={{ borderColor: 'var(--border-solid)' }}>
               <Download size={16} style={{ color: 'var(--text-muted)' }} />
@@ -113,7 +113,7 @@ export default function SettingsPage() {
           }
         />
 
-        <SettingCard icon={Upload} label="Import Data" color="#0d9488"
+        <SettingCard icon={Upload} label="Import Data" color="#6d28d9"
           action={
             <>
               <input ref={fileInputRef} type="file" accept=".csv" onChange={handleImport} className="hidden" />
@@ -140,7 +140,7 @@ export default function SettingsPage() {
           }
         />
 
-        <SettingCard icon={Tag} label="Manage Categories" description={`${categories.length} categories`} color="#0d9488"
+        <SettingCard icon={Tag} label="Manage Categories" description={`${categories.length} categories`} color="#6d28d9"
           action={
             <button onClick={() => setShowCatManager(true)} className="px-3 py-1.5 rounded-lg text-sm font-semibold border hover:bg-primary-500/5 transition-all duration-200 hover:scale-105 active:scale-95" style={{ borderColor: 'var(--border-solid)' }}>
               Edit
@@ -171,12 +171,12 @@ export default function SettingsPage() {
 
 function SettingCard({ icon: Icon, label, description, color, action }) {
   return (
-    <div className="card p-3.5 flex items-center gap-3">
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: color + '12' }}>
-        <Icon size={18} style={{ color }} />
+    <div className="card p-4 flex items-center gap-3.5">
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: color + '12' }}>
+        <Icon size={19} style={{ color }} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-base font-medium">{label}</p>
+        <p className="text-base font-semibold">{label}</p>
         {description && (
           <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
             {typeof description === 'string' ? description : description}
@@ -191,9 +191,9 @@ function SettingCard({ icon: Icon, label, description, color, action }) {
 function CategoryManager({ categories, onClose }) {
   const [newName, setNewName] = useState('');
   const [newType, setNewType] = useState('expense');
-  const [newColor, setNewColor] = useState('#0d9488');
+  const [newColor, setNewColor] = useState('#6d28d9');
 
-  const colors = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#0d9488'];
+  const colors = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#6d28d9', '#ec4899', '#14b8a6', '#f97316'];
 
   const handleAdd = async () => {
     if (!newName) return;

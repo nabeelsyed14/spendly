@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { Capacitor, SystemBars, SystemBarsStyle } from '@capacitor/core';
 
 const ThemeContext = createContext();
 
@@ -12,6 +13,11 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     localStorage.setItem('spendly-theme', theme);
+    if (Capacitor.isNativePlatform()) {
+      SystemBars.setStyle({
+        style: theme === 'dark' ? SystemBarsStyle.Dark : SystemBarsStyle.Light,
+      }).catch(() => {});
+    }
   }, [theme]);
 
   const toggleTheme = () => setTheme(t => t === 'light' ? 'dark' : 'light');

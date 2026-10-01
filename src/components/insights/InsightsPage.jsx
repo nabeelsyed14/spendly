@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Minus, AlertTriangle, Target, Clock, BarChart3, Sparkles } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, AlertTriangle, Target, Clock, BarChart3 } from 'lucide-react';
 import { useTransactions } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
 import { spendingVelocity, getCategoryTrends, monthlyProjection, habitPatterns, anomalyDetection } from '../../lib/insights';
@@ -6,11 +6,11 @@ import { spendingVelocity, getCategoryTrends, monthlyProjection, habitPatterns, 
 function InsightCard({ icon: Icon, title, children, color = 'var(--text)', className = '' }) {
   return (
     <div className={`glass-card p-5 animate-slide-up ${className}`}>
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: color + '12' }}>
-          <Icon size={16} style={{ color }} />
+      <div className="flex items-center gap-2.5 mb-4">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: color + '12' }}>
+          <Icon size={17} style={{ color }} />
         </div>
-        <h3 className="text-base font-semibold">{title}</h3>
+        <h3 className="text-lg font-bold">{title}</h3>
       </div>
       {children}
     </div>
@@ -49,7 +49,7 @@ function ProjectionInsight() {
   const progress = (dayOfMonth / daysInMonth) * 100;
 
   return (
-    <InsightCard icon={Target} title="Monthly Projection" color="#0d9488" className="stagger-2">
+    <InsightCard icon={Target} title="Monthly Projection" color="#6d28d9" className="stagger-2">
       <p className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>
         Day {dayOfMonth} of {daysInMonth} — {Math.round(progress)}% through the month
       </p>
@@ -76,7 +76,7 @@ function HabitInsight() {
   const maxVal = Math.max(...byDay, 1);
 
   return (
-    <InsightCard icon={Clock} title="Habit Patterns" color="#0d9488" className="stagger-3">
+    <InsightCard icon={Clock} title="Habit Patterns" color="#6d28d9" className="stagger-3">
       <div className="flex items-end gap-1 h-16 mb-3">
         {byDay.map((val, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -177,24 +177,10 @@ function TrendInsight() {
   );
 }
 
-export default function InsightsPage({ onOpenChat }) {
+export default function InsightsPage() {
   return (
     <div className="space-y-3">
-      <h2 className="text-lg font-bold">Insights</h2>
-      {onOpenChat && (
-        <button
-          onClick={onOpenChat}
-          className="w-full glass-card p-4 flex items-center gap-3 group cursor-pointer transition-all duration-300 hover:shadow-lg hover:glow-sm animate-slide-up active:scale-[0.98]"
-        >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-200">
-            <Sparkles size={20} className="text-white" />
-          </div>
-          <div className="text-left">
-            <p className="text-base font-semibold">Ask AI about your finances</p>
-            <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Get personalized insights powered by AI</p>
-          </div>
-        </button>
-      )}
+      <h2 className="text-xl font-black">Insights</h2>
 
       <VelocityInsight />
       <ProjectionInsight />

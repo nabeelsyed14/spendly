@@ -19,8 +19,8 @@ export default function CategoryChart() {
 
   if (chartData.length === 0) {
     return (
-      <div className="glass-card p-5 animate-fade-in">
-        <h3 className="text-base font-semibold mb-3">Spending by Category</h3>
+      <div className="glass-card p-6 animate-fade-in">
+        <h3 className="text-lg font-bold mb-3">Spending by Category</h3>
         <div className="flex flex-col items-center justify-center py-8">
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No expenses yet this month</p>
         </div>
@@ -32,10 +32,10 @@ export default function CategoryChart() {
   const maxVal = chartData[0]?.value || 1;
 
   return (
-    <div className="glass-card p-5 animate-slide-up stagger-1">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold">Spending by Category</h3>
-        <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>{formatAmount(total, { compact: true })}</span>
+    <div className="glass-card p-6 animate-slide-up stagger-1">
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-lg font-bold">Spending by Category</h3>
+        <span className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>{formatAmount(total, { compact: true })}</span>
       </div>
 
       <div className="space-y-3">
@@ -60,11 +60,11 @@ export default function CategoryChart() {
                       boxShadow: isHovered ? `0 0 8px ${d.color}60` : 'none',
                     }}
                   />
-                  <span className="text-sm font-medium">{d.name}</span>
+                  <span className="text-sm font-semibold">{d.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold tabular-nums">{formatAmount(d.value, { compact: true })}</span>
-                  <span className="text-sm font-medium tabular-nums w-6 text-right" style={{ color: 'var(--text-muted)' }}>{pct}%</span>
+                  <span className="text-sm font-bold tabular-nums">{formatAmount(d.value, { compact: true })}</span>
+                  <span className="text-sm font-semibold tabular-nums w-6 text-right" style={{ color: 'var(--text-muted)' }}>{pct}%</span>
                 </div>
               </div>
               <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--input-bg)' }}>

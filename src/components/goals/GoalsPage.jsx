@@ -31,12 +31,12 @@ export default function GoalsPage() {
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold">Health Goals</h2>
+          <h2 className="text-xl font-black">Health Goals</h2>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Set targets and track your budget health</p>
         </div>
         <button
           onClick={() => { setEditing(null); setShowForm(true); }}
-          className="flex items-center gap-1.5 px-3 py-2 btn-primary text-sm sm:py-2.5"
+          className="flex items-center gap-1.5 px-4 py-2 btn-primary text-sm sm:py-2.5"
         >
           <Plus size={18} strokeWidth={2.5} />
           <span className="hidden sm:inline">New Goal</span>
@@ -44,11 +44,11 @@ export default function GoalsPage() {
       </div>
 
       {score !== null && (
-        <div className="gradient-border p-4 animate-scale-in glow-sm">
-          <div className="flex items-center gap-3">
-            <div className="text-3xl font-extrabold tabular-nums" style={{ color: getScoreColor(score) }}>{score}</div>
+        <div className="gradient-border p-5 animate-scale-in glow-sm">
+          <div className="flex items-center gap-3.5">
+            <div className="text-4xl font-extrabold tabular-nums" style={{ color: getScoreColor(score) }}>{score}</div>
             <div>
-              <p className="text-base font-semibold" style={{ color: getScoreColor(score) }}>
+              <p className="text-lg font-bold" style={{ color: getScoreColor(score) }}>
                 {score >= 8 ? 'Excellent' : score >= 6 ? 'Good' : score >= 4 ? 'Fair' : 'Needs Work'}
               </p>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
@@ -84,14 +84,14 @@ export default function GoalsPage() {
             const isComplete = goal.type === 'expense' ? actual <= goal.targetAmount : actual >= goal.targetAmount;
 
             return (
-              <div key={goal.id} className={`glass-card p-4 animate-slide-up stagger-${Math.min(i + 1, 6)}`}>
+              <div key={goal.id} className={`glass-card p-5 animate-slide-up stagger-${Math.min(i + 1, 6)}`}>
                 <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: color + '12' }}>
-                      <TypeIcon size={20} style={{ color }} />
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: color + '12' }}>
+                      <TypeIcon size={21} style={{ color }} />
                     </div>
                     <div>
-                      <p className="text-base font-semibold">{goal.name}</p>
+                      <p className="text-base font-bold">{goal.name}</p>
                       {goal.category && (
                         <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{goal.category}</p>
                       )}
@@ -210,7 +210,7 @@ function HealthGoalForm({ editing, categories, goalTypes, onClose }) {
                   type === value ? 'bg-primary-500/10' : 'hover:bg-primary-500/5'
                 }`}
               >
-                <Icon size={16} style={{ color: type === value ? '#0d9488' : 'var(--text-muted)' }} />
+                <Icon size={16} style={{ color: type === value ? '#6d28d9' : 'var(--text-muted)' }} />
                 <span className="text-sm font-medium">{label}</span>
               </button>
             ))}

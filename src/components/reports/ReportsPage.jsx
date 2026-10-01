@@ -16,22 +16,22 @@ export default function ReportsPage() {
   const report = view === 'monthly' ? monthlyReport : allTimeReport;
 
   const StatCard = ({ icon: Icon, label, value, color = 'var(--text)', delay = 0 }) => (
-    <div className={`glass-card p-3.5 animate-slide-up stagger-${delay}`}>
-      <div className="flex items-center gap-2 mb-1.5">
-        <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: color + '12' }}>
+    <div className={`glass-card p-4 animate-slide-up stagger-${delay}`}>
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: color + '12' }}>
           <Icon size={14} style={{ color }} />
         </div>
-        <span className="text-sm uppercase tracking-wider font-medium" style={{ color: 'var(--text-muted)' }}>{label}</span>
+        <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</span>
       </div>
-      <p className="text-lg font-extrabold tabular-nums" style={{ color }}>{value}</p>
+      <p className="text-xl font-black tabular-nums" style={{ color }}>{value}</p>
     </div>
   );
 
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">Reports</h2>
-        <div className="flex gap-0.5 p-0.5 rounded-xl glass">
+        <h2 className="text-xl font-black">Reports</h2>
+        <div className="flex gap-0.5 p-1 rounded-2xl glass">
           {[
             { key: 'monthly', label: 'Month', icon: Calendar },
             { key: 'alltime', label: 'All Time', icon: Clock },
@@ -39,7 +39,7 @@ export default function ReportsPage() {
             <button
               key={key}
               onClick={() => setView(key)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 active:scale-[0.97] ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold transition-all duration-200 active:scale-[0.97] ${
                 view === key ? 'bg-primary-500 text-white shadow-md' : ''
               }`}
               style={view !== key ? { color: 'var(--text-muted)' } : {}}
@@ -58,28 +58,28 @@ export default function ReportsPage() {
       <div className="grid grid-cols-2 gap-2">
         <StatCard icon={TrendingUp} label="Income" value={formatAmount(report.totalIncome)} color="#22c55e" delay={1} />
         <StatCard icon={TrendingDown} label="Expenses" value={formatAmount(report.totalExpense)} color="#ef4444" delay={2} />
-        <StatCard icon={DollarSign} label={view === 'monthly' ? 'Balance' : 'Net Savings'} value={formatAmount(view === 'monthly' ? report.balance : report.netSavings)} color="#0d9488" delay={3} />
+        <StatCard icon={DollarSign} label={view === 'monthly' ? 'Balance' : 'Net Savings'} value={formatAmount(view === 'monthly' ? report.balance : report.netSavings)} color="#6d28d9" delay={3} />
         <StatCard icon={Percent} label="Savings Rate" value={`${report.savingsRate}%`} color={report.savingsRate >= 20 ? '#22c55e' : '#f59e0b'} delay={4} />
       </div>
 
-      <div className="glass-card p-4 animate-slide-up stagger-3">
-        <h3 className="text-base font-semibold mb-3">Spending Source</h3>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="p-2.5 rounded-xl" style={{ background: 'var(--input-bg)' }}>
-            <p className="text-sm uppercase tracking-wider font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>From Income</p>
-            <p className="text-base font-bold">{formatAmount(report.incomeSpend)}</p>
+      <div className="glass-card p-5 animate-slide-up stagger-3">
+        <h3 className="text-lg font-bold mb-4">Spending Source</h3>
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="p-3.5 rounded-2xl" style={{ background: 'var(--input-bg)' }}>
+            <p className="text-xs uppercase tracking-wider font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>From Income</p>
+            <p className="text-lg font-bold">{formatAmount(report.incomeSpend)}</p>
           </div>
-          <div className="p-2.5 rounded-xl" style={{ background: 'var(--input-bg)' }}>
-            <p className="text-sm uppercase tracking-wider font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>From Savings</p>
-            <p className="text-base font-bold text-amber-600">{formatAmount(report.savingsSpend)}</p>
+          <div className="p-3.5 rounded-2xl" style={{ background: 'var(--input-bg)' }}>
+            <p className="text-xs uppercase tracking-wider font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>From Savings</p>
+            <p className="text-lg font-bold text-amber-600">{formatAmount(report.savingsSpend)}</p>
           </div>
         </div>
       </div>
 
-      <div className="glass-card p-4 animate-slide-up stagger-4">
-        <div className="flex items-center gap-2 mb-3">
-          <ShoppingCart size={16} className="text-primary-500" />
-          <h3 className="text-base font-semibold">Top Spending Categories</h3>
+      <div className="glass-card p-5 animate-slide-up stagger-4">
+        <div className="flex items-center gap-2.5 mb-4">
+          <ShoppingCart size={17} className="text-primary-500" />
+          <h3 className="text-lg font-bold">Top Spending Categories</h3>
         </div>
 
         {report.topCategories.length === 0 ? (
@@ -91,10 +91,10 @@ export default function ReportsPage() {
               return (
                 <div key={cat.name} className={`animate-slide-up stagger-${Math.min(i + 1, 6)}`}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-medium">{cat.name}</span>
+                    <span className="text-sm font-semibold">{cat.name}</span>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-semibold tabular-nums">{formatAmount(cat.amount)}</span>
-                      <span className="text-sm font-medium px-1.5 py-0.5 rounded-lg" style={{ background: 'var(--input-bg)', color: 'var(--text-muted)' }}>
+                      <span className="text-sm font-bold tabular-nums">{formatAmount(cat.amount)}</span>
+                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'var(--input-bg)', color: 'var(--text-muted)' }}>
                         {cat.percent}%
                       </span>
                     </div>
@@ -102,7 +102,7 @@ export default function ReportsPage() {
                   <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--input-bg)' }}>
                     <div
                       className="h-full rounded-full bar-animate"
-                      style={{ background: catData?.color || '#0d9488', width: `${cat.percent}%`, animationDelay: `${i * 0.1}s` }}
+                      style={{ background: catData?.color || '#6d28d9', width: `${cat.percent}%`, animationDelay: `${i * 0.1}s` }}
                     />
                   </div>
                 </div>
@@ -113,8 +113,8 @@ export default function ReportsPage() {
       </div>
 
       {view === 'alltime' && allTimeReport.monthlyBreakdown.length > 1 && (
-        <div className="glass-card p-4 animate-slide-up stagger-5">
-          <h3 className="text-base font-semibold mb-3">Monthly Trend</h3>
+        <div className="glass-card p-5 animate-slide-up stagger-5">
+          <h3 className="text-lg font-bold mb-4">Monthly Trend</h3>
           <div className="h-44">
             <ResponsiveContainer>
               <AreaChart data={allTimeReport.monthlyBreakdown}>

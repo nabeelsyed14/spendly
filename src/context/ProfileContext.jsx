@@ -8,7 +8,7 @@ export function ProfileProvider({ children }) {
   });
 
   const [avatarGradient, setAvatarGradientState] = useState(() => {
-    return localStorage.getItem('spendly-avatar-gradient') || '#0d9488,#0f766e';
+    return localStorage.getItem('spendly-avatar-gradient') || '#6d28d9,#7c3aed';
   });
 
   const [avatarPhoto, setAvatarPhotoState] = useState(() => {

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { CurrencyProvider } from './context/CurrencyContext';
@@ -6,7 +5,6 @@ import { ProfileProvider } from './context/ProfileContext';
 import Sidebar, { MobileNav } from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import CurrencyPicker from './components/ui/CurrencyPicker';
-import ChatDrawer from './components/ai/ChatDrawer';
 import BalanceCard from './components/dashboard/BalanceCard';
 import CategoryChart from './components/dashboard/CategoryChart';
 import TrendChart from './components/dashboard/TrendChart';
@@ -30,13 +28,13 @@ function Dashboard() {
   );
 }
 
-function AnimatedRoutes({ onOpenChat }) {
+function AnimatedRoutes() {
   const location = useLocation();
   return (
     <Routes location={location} key={location.pathname}>
       <Route path="/" element={<Dashboard />} />
       <Route path="/transactions" element={<TransactionList />} />
-      <Route path="/insights" element={<InsightsPage onOpenChat={onOpenChat} />} />
+      <Route path="/insights" element={<InsightsPage />} />
       <Route path="/goals" element={<GoalsPage />} />
       <Route path="/reports" element={<ReportsPage />} />
       <Route path="/settings" element={<SettingsPage />} />
@@ -60,8 +58,6 @@ function PageWrapper({ children }) {
 }
 
 export default function App() {
-  const [chatOpen, setChatOpen] = useState(false);
-
   return (
     <ThemeProvider>
       <CurrencyProvider>
@@ -74,10 +70,9 @@ export default function App() {
             <div className="floating-orb floating-orb-3" />
 
             <CurrencyPicker />
-            <ChatDrawer isOpen={chatOpen} onClose={() => setChatOpen(false)} />
 
             <PageWrapper>
-              <AnimatedRoutes onOpenChat={() => setChatOpen(true)} />
+              <AnimatedRoutes />
             </PageWrapper>
           </BrowserRouter>
         </ProfileProvider>

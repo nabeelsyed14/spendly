@@ -27,15 +27,15 @@ export default function TrendChart() {
   }
 
   return (
-    <div className="glass-card p-4 animate-slide-up stagger-3">
-      <h3 className="text-base font-semibold mb-3">Daily Spending (14 days)</h3>
-      <div className="h-40">
+    <div className="glass-card p-6 animate-slide-up stagger-3">
+      <h3 className="text-lg font-bold mb-4">Daily Spending (14 days)</h3>
+      <div className="h-44">
         <ResponsiveContainer>
           <AreaChart data={data}>
             <defs>
               <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#0d9488" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#0d9488" stopOpacity={0} />
+                <stop offset="5%" stopColor="#6d28d9" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#6d28d9" stopOpacity={0} />
               </linearGradient>
             </defs>
             <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
@@ -45,13 +45,13 @@ export default function TrendChart() {
               contentStyle={{
                 background: 'var(--surface-solid)',
                 border: '1px solid var(--border-solid)',
-                borderRadius: 12,
-                fontSize: 11,
-                padding: '6px 10px',
+                borderRadius: 16,
+                fontSize: 12,
+                padding: '8px 12px',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
               }}
             />
-            <Area type="monotone" dataKey="amount" stroke="#0d9488" strokeWidth={2} fill="url(#trendGrad)" animationDuration={1200} />
+            <Area type="monotone" dataKey="amount" stroke="#6d28d9" strokeWidth={2} fill="url(#trendGrad)" animationDuration={1200} />
           </AreaChart>
         </ResponsiveContainer>
       </div>

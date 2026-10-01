@@ -40,47 +40,47 @@ export default function BalanceCard() {
   const greeting = userName ? `${getGreeting()}, ${userName}` : getGreeting();
 
   return (
-    <div className="relative overflow-hidden rounded-2xl p-5 md:p-6 text-white animate-scale-in glow-pulse" style={{ background: 'linear-gradient(135deg, #0d9488, #0f766e, #115e59)' }}>
-      <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/5 -translate-y-12 translate-x-12" />
-      <div className="absolute bottom-0 left-0 w-28 h-28 rounded-full bg-white/5 translate-y-10 -translate-x-8" />
-      <div className="absolute top-1/2 right-1/4 w-20 h-20 rounded-full bg-white/5" />
+    <div className="relative overflow-hidden rounded-3xl p-6 md:p-7 text-white animate-scale-in glow-pulse" style={{ background: 'linear-gradient(135deg, #6d28d9, #5b21b6, #4c1d95)' }}>
+      <div className="absolute top-0 right-0 w-44 h-44 rounded-full bg-white/5 -translate-y-14 translate-x-14" />
+      <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full bg-white/5 translate-y-12 -translate-x-10" />
+      <div className="absolute top-1/2 right-1/4 w-24 h-24 rounded-full bg-white/5" />
 
       <div className="relative z-10">
-        <div className="flex items-center gap-2.5 mb-4 animate-slide-up">
-          <Avatar name={userName || 'User'} photo={avatarPhoto} size={36} />
-          <span className="text-sm font-medium text-white/80">{greeting}</span>
+        <div className="flex items-center gap-3 mb-5 animate-slide-up">
+          <Avatar name={userName || 'User'} photo={avatarPhoto} size={40} />
+          <span className="text-base font-semibold text-white/85">{greeting}</span>
         </div>
 
-        <p className="text-3xl md:text-4xl font-extrabold mb-5 tracking-tight animate-slide-up stagger-1">
+        <p className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight animate-slide-up stagger-1">
           <AnimatedNumber value={balance} formatAmount={formatAmount} />
         </p>
 
-        <div className="flex gap-2 animate-slide-up stagger-2">
-          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-3 py-3 border border-white/10">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-              <TrendingUp size={16} className="text-emerald-300" />
+        <div className="flex gap-2.5 animate-slide-up stagger-2">
+          <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+              <TrendingUp size={17} className="text-emerald-300" />
             </div>
             <div>
-              <p className="text-base text-white/50 uppercase tracking-wider font-medium">Income</p>
+              <p className="text-[11px] text-white/50 uppercase tracking-wider font-semibold">Income</p>
               <p className="text-sm font-bold tabular-nums">{formatAmount(income)}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-3 py-3 border border-white/10">
-            <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
-              <TrendingDown size={16} className="text-red-300" />
+          <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
+            <div className="w-9 h-9 rounded-xl bg-red-500/20 flex items-center justify-center">
+              <TrendingDown size={17} className="text-red-300" />
             </div>
             <div>
-              <p className="text-base text-white/50 uppercase tracking-wider font-medium">Spent</p>
+              <p className="text-[11px] text-white/50 uppercase tracking-wider font-semibold">Spent</p>
               <p className="text-sm font-bold tabular-nums">{formatAmount(expense)}</p>
             </div>
           </div>
           {savingsSpend > 0 && (
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-xl px-3 py-3 border border-white/10 animate-scale-in stagger-3">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                <PiggyBank size={16} className="text-amber-300" />
+            <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10 animate-scale-in stagger-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                <PiggyBank size={17} className="text-amber-300" />
               </div>
               <div>
-                <p className="text-base text-white/50 uppercase tracking-wider font-medium">Savings</p>
+                <p className="text-[11px] text-white/50 uppercase tracking-wider font-semibold">Savings</p>
                 <p className="text-sm font-bold tabular-nums">{formatAmount(savingsSpend)}</p>
               </div>
             </div>

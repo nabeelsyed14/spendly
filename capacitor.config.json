@@ -1,0 +1,12 @@
+{
+  "appId": "com.spendly.app",
+  "appName": "Spendly",
+  "webDir": "dist",
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DARK",
+      "initialViewportFitValueHint": "cover"
+    }
+  }
+}
