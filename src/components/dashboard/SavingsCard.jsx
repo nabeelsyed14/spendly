@@ -47,7 +47,7 @@ export default function SavingsCard() {
         <p className="text-[11px] uppercase tracking-wider font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>
           Available pot
         </p>
-        <p className="text-4xl font-extrabold tracking-tight tabular-nums">
+        <p className={`${formatAmount(balance).length > 14 ? 'text-2xl' : formatAmount(balance).length > 10 ? 'text-3xl' : 'text-4xl'} font-extrabold tracking-tight tabular-nums`}>
           <AnimatedNumber value={balance} formatAmount={formatAmount} />
         </p>
       </div>
@@ -148,7 +148,7 @@ function SavingsForm({ mode, onClose }) {
       title={kind === 'deposit' ? 'Allocate to Savings' : 'Withdraw from Savings'}
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="flex gap-1.5 p-1 rounded-xl animate-slide-up stagger-1" style={{ background: 'var(--input-bg)' }}>
+        <div className="flex flex-wrap gap-1.5 p-1 rounded-xl animate-slide-up stagger-1" style={{ background: 'var(--input-bg)' }}>
             {[
               { value: 'deposit', label: 'Allocate', icon: ArrowDownLeft },
               { value: 'withdraw', label: 'Withdraw', icon: ArrowUpRight },

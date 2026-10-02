@@ -24,15 +24,29 @@ export default function ReportsPage() {
   const savingsBalance = getSavingsBalance(savingsEntries, transactions);
   const brand = palette.colors[600];
 
+  // Half-width grid cells (~128px of content on a 360dp screen) can't fit
+  // long letter-currency amounts at fixed sizes — tier down by string length.
+  const statSize = (len) =>
+    len > 14 ? 'text-sm'
+    : len > 11 ? 'text-base'
+    : len > 8 ? 'text-lg'
+    : 'text-2xl';
+
+  const cellSize = (len) =>
+    len > 14 ? 'text-xs'
+    : len > 11 ? 'text-sm'
+    : len > 8 ? 'text-base'
+    : 'text-xl';
+
   const StatCard = ({ icon: Icon, label, value, color = 'var(--text)', delay = 0 }) => (
-    <div className={`glass-card p-4 animate-slide-up stagger-${delay}`}>
+    <div className={`glass-card p-4 overflow-hidden animate-slide-up stagger-${delay}`}>
       <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: tint(color) }}>
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: tint(color) }}>
           <Icon size={14} style={{ color }} />
         </div>
         <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</span>
       </div>
-      <p className="text-2xl font-black tabular-nums" style={{ color }}>{value}</p>
+      <p className={`${statSize(value.length)} font-black tabular-nums`} style={{ color }}>{value}</p>
     </div>
   );
 
@@ -43,7 +57,7 @@ export default function ReportsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-extrabold tracking-tight">Reports</h2>
-        <div className="flex gap-0.5 p-1 rounded-2xl glass">
+        <div className="flex flex-wrap gap-0.5 p-1 rounded-2xl glass">
           {[
             { key: 'monthly', label: 'Month', icon: Calendar },
             { key: 'alltime', label: 'All Time', icon: Clock },
@@ -86,13 +100,13 @@ export default function ReportsPage() {
       <div className="glass-card p-5 animate-slide-up stagger-3">
         <h3 className="text-xl font-extrabold mb-4">Spending Source</h3>
         <div className="grid grid-cols-2 gap-2.5">
-          <div className="p-3.5 rounded-2xl" style={{ background: 'var(--input-bg)' }}>
+          <div className="p-3.5 rounded-2xl overflow-hidden" style={{ background: 'var(--input-bg)' }}>
             <p className="text-xs uppercase tracking-wider font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>From Income</p>
-            <p className="text-xl font-extrabold">{formatAmount(report.incomeSpend)}</p>
+            <p className={`${cellSize(formatAmount(report.incomeSpend).length)} font-extrabold tabular-nums`}>{formatAmount(report.incomeSpend)}</p>
           </div>
-          <div className="p-3.5 rounded-2xl" style={{ background: 'var(--input-bg)' }}>
+          <div className="p-3.5 rounded-2xl overflow-hidden" style={{ background: 'var(--input-bg)' }}>
             <p className="text-xs uppercase tracking-wider font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>From Savings</p>
-            <p className="text-xl font-extrabold text-amber-600">{formatAmount(report.savingsSpend)}</p>
+            <p className={`${cellSize(formatAmount(report.savingsSpend).length)} font-extrabold tabular-nums text-amber-600`}>{formatAmount(report.savingsSpend)}</p>
           </div>
         </div>
       </div>

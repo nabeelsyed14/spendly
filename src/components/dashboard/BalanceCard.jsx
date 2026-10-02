@@ -20,6 +20,15 @@ export default function BalanceCard() {
 
   const greeting = userName ? `${getGreeting()}, ${userName}` : getGreeting();
 
+  // Tier the hero font by final string length so long letter-currency
+  // amounts (e.g. "AED 6,529,112") never overflow the card on narrow screens.
+  const heroLength = formatAmount(netSavings).length;
+  const heroSize =
+    heroLength > 16 ? 'text-2xl md:text-3xl'
+    : heroLength > 12 ? 'text-3xl md:text-4xl'
+    : heroLength > 9 ? 'text-4xl md:text-5xl'
+    : 'text-5xl md:text-6xl';
+
   const handleMouseMove = (e) => {
     const el = cardRef.current;
     if (!el || !window.matchMedia('(hover: hover)').matches) return;
@@ -62,7 +71,7 @@ export default function BalanceCard() {
             </span>
           </div>
 
-          <p className="text-5xl md:text-6xl font-extrabold mb-6 tracking-tight animate-slide-up stagger-2">
+          <p className={`${heroSize} font-extrabold mb-6 tracking-tight animate-slide-up stagger-2`}>
             <AnimatedNumber value={netSavings} formatAmount={formatAmount} />
           </p>
 

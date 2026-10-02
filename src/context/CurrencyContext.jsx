@@ -9,9 +9,9 @@ const CURRENCIES = [
   { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar', locale: 'en-CA' },
   { code: 'AUD', symbol: 'A$', name: 'Australian Dollar', locale: 'en-AU' },
   { code: 'BRL', symbol: 'R$', name: 'Brazilian Real', locale: 'pt-BR' },
-  { code: 'PKR', symbol: '₨', name: 'Pakistani Rupee', locale: 'en-PK' },
-  { code: 'AED', symbol: 'د.إ', name: 'UAE Dirham', locale: 'ar-AE' },
-  { code: 'SAR', symbol: '﷼', name: 'Saudi Riyal', locale: 'ar-SA' },
+  { code: 'PKR', symbol: 'Rs', name: 'Pakistani Rupee', locale: 'en-PK' },
+  { code: 'AED', symbol: 'AED', name: 'UAE Dirham', locale: 'en-AE' },
+  { code: 'SAR', symbol: 'SAR', name: 'Saudi Riyal', locale: 'en-SA' },
   { code: 'CNY', symbol: '¥', name: 'Chinese Yuan', locale: 'zh-CN' },
 ];
 
@@ -28,6 +28,11 @@ export function CurrencyProvider({ children }) {
 
   const currency = CURRENCIES.find(c => c.code === currencyCode) || CURRENCIES[0];
 
+  // Letter-based symbols (AED, SAR, Rs) get a space; glyph symbols ($, €, ₹) don't.
+  const withSymbol = useCallback((formatted) =>
+    /^[A-Za-z]/.test(currency.symbol) ? `${currency.symbol} ${formatted}` : `${currency.symbol}${formatted}`,
+    [currency]);
+
   const setCurrency = useCallback((code) => {
     setCurrencyCode(code);
     localStorage.setItem('spendly-currency', code);
@@ -37,22 +42,29 @@ export function CurrencyProvider({ children }) {
 
   const formatAmount = useCallback((value, opts = {}) => {
     const { showSymbol = true, compact = false } = opts;
-    if (typeof value !== 'number' || isNaN(value)) return showSymbol ? `${currency.symbol}0` : '0';
+    if (typeof value !== 'number' || isNaN(value)) return showSymbol ? withSymbol('0') : '0';
+
+    const isZeroDecimal = currency.code === 'JPY';
+    const hasCents = !isZeroDecimal && Math.round(Math.abs(value) * 100) % 100 !== 0;
+    const minFractionDigits = isZeroDecimal || !hasCents ? 0 : 2;
 
     try {
       const formatter = new Intl.NumberFormat(currency.locale, {
         style: showSymbol ? 'currency' : 'decimal',
         currency: showSymbol ? currency.code : undefined,
         currencyDisplay: 'symbol',
-        minimumFractionDigits: currency.code === 'JPY' ? 0 : 2,
-        maximumFractionDigits: currency.code === 'JPY' ? 0 : 2,
+        minimumFractionDigits: minFractionDigits,
+        maximumFractionDigits: isZeroDecimal ? 0 : 2,
         ...(compact ? { notation: 'compact', compactDisplay: 'short' } : {}),
       });
-      return formatter.format(value);
+      // Intl inserts U+00A0 (non-breaking space) after letter symbols like "AED",
+      // which makes long amounts unbreakable and overflows narrow containers.
+      return formatter.format(value).replace(/\u00A0/g, ' ');
     } catch {
-      return `${currency.symbol}${value.toFixed(2)}`;
+      const num = hasCents ? value.toFixed(2) : value.toFixed(0);
+      return showSymbol ? withSymbol(num) : num;
     }
-  }, [currency]);
+  }, [currency, withSymbol]);
 
   return (
     <CurrencyContext.Provider value={{ currency, currencies: CURRENCIES, setCurrency, formatAmount, hasChosenCurrency: hasChosen }}>

@@ -29,7 +29,7 @@ function VelocityInsight() {
   return (
     <InsightCard icon={TrendingUp} title="Spending Velocity" color={color} className="stagger-1">
       <div className="flex items-baseline gap-2 mb-2">
-        <span className="text-3xl font-extrabold tabular-nums">{formatAmount(current)}</span>
+        <span className={`${formatAmount(current).length > 14 ? 'text-xl' : formatAmount(current).length > 11 ? 'text-2xl' : 'text-3xl'} font-extrabold tabular-nums`}>{formatAmount(current)}</span>
         <span className="text-sm" style={{ color: 'var(--text-muted)' }}>/day avg</span>
       </div>
       <div className="flex items-center gap-1.5 p-2 rounded-xl" style={{ background: 'var(--input-bg)' }}>

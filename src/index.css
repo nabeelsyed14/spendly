@@ -380,9 +380,12 @@
     box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.15);
   }
 
-  /* Keep form controls at >=16px so mobile WebViews never auto-zoom on focus */
+  /* Keep form controls at >=16px so mobile WebViews never auto-zoom on focus.
+     min-width:0 removes the intrinsic ~20ch min-content so controls can shrink
+     in narrow flex layouts instead of forcing the page wider than the viewport. */
   input, textarea, select {
     font-size: 16px !important;
+    min-width: 0;
   }
 
   /* ── Tag ── */

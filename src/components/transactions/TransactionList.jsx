@@ -56,14 +56,16 @@ export default function TransactionList() {
   const handleDelete = async (id) => {
     if (confirm('Delete this transaction?')) {
       await deleteTransaction(id);
+      return true;
     }
+    return false;
   };
 
   return (
     <div className="space-y-4">
       <h2 className="text-3xl font-extrabold tracking-tight">Transactions</h2>
       <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-0">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
           <input
             type="text"
@@ -73,7 +75,7 @@ export default function TransactionList() {
             className="input w-full !pl-9 pr-3 py-2.5"
           />
         </div>
-        <div className="flex gap-1.5 p-1 rounded-2xl" style={{ background: 'var(--input-bg)' }}>
+        <div className="flex flex-wrap gap-1.5 p-1 rounded-2xl" style={{ background: 'var(--input-bg)' }}>
           {['all', 'expense', 'income'].map(t => (
             <button
               key={t}
@@ -111,11 +113,11 @@ export default function TransactionList() {
           const dayTotal = items.reduce((s, t) => s + (t.type === 'expense' ? -t.amount : t.amount), 0);
           return (
             <div key={dateKey} className={`animate-slide-up stagger-${Math.min(groupIdx + 1, 6)}`}>
-              <div className="flex items-center justify-between mb-1.5 px-1">
+              <div className="flex flex-wrap items-center justify-between mb-1.5 px-1 gap-x-2">
                 <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
                   {format(new Date(dateKey), 'EEEE, MMM d')}
                 </p>
-                <p className={`text-base font-bold tabular-nums ${dayTotal >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                <p className={`text-base font-bold tabular-nums ml-auto ${dayTotal >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                   {dayTotal >= 0 ? '+' : ''}{formatAmount(dayTotal)}
                 </p>
               </div>
@@ -123,7 +125,8 @@ export default function TransactionList() {
                 {items.map((t, rowIdx) => (
                   <motion.div
                     key={t.id}
-                    className="group card p-4 flex items-center gap-3"
+                    className="group card p-4 flex items-center gap-3 cursor-pointer"
+                    onClick={() => { setEditing(t); setShowForm(true); }}
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.18, delay: Math.min(rowIdx * 0.03, 0.25) }}
@@ -153,16 +156,16 @@ export default function TransactionList() {
                         {t.type === 'income' ? '+' : '-'}{formatAmount(t.amount)}
                       </p>
                     </div>
-                    <div className="flex gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <div className="hidden [@media(hover:hover)]:flex gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <button
-                        onClick={() => { setEditing(t); setShowForm(true); }}
+                        onClick={(e) => { e.stopPropagation(); setEditing(t); setShowForm(true); }}
                         className="p-1.5 rounded-lg transition-all duration-150 hover:bg-primary-500/10 active:scale-95"
                         style={{ color: 'var(--text-muted)' }}
                       >
                         <Pencil size={14} />
                       </button>
                       <button
-                        onClick={() => handleDelete(t.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDelete(t.id); }}
                         className="p-1.5 rounded-lg transition-all duration-150 hover:bg-red-500/10 text-red-500 active:scale-95"
                       >
                         <Trash2 size={14} />
@@ -181,6 +184,12 @@ export default function TransactionList() {
           editing={editing}
           onSave={handleSave}
           onClose={() => { setShowForm(false); setEditing(null); }}
+          onDelete={editing ? async () => {
+            if (await handleDelete(editing.id)) {
+              setShowForm(false);
+              setEditing(null);
+            }
+          } : null}
         />
       )}
     </div>

@@ -7,7 +7,7 @@ import { useCategories, useTransactions, useSavings } from '../../hooks/useData'
 import { useCurrency } from '../../context/CurrencyContext';
 import { getSavingsBalance } from '../../lib/savings';
 
-export default function TransactionForm({ onSave, editing = null, onClose }) {
+export default function TransactionForm({ onSave, editing = null, onClose, onDelete = null }) {
   const categories = useCategories();
   const transactions = useTransactions();
   const savings = useSavings();
@@ -63,7 +63,7 @@ export default function TransactionForm({ onSave, editing = null, onClose }) {
   return (
     <Modal isOpen={true} onClose={onClose} title={editing ? 'Edit Transaction' : 'Add Transaction'}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="animate-slide-up stagger-1 flex gap-1.5 p-1 rounded-xl" style={{ background: 'var(--input-bg)' }}>
+        <div className="animate-slide-up stagger-1 flex flex-wrap gap-1.5 p-1 rounded-xl" style={{ background: 'var(--input-bg)' }}>
           {['expense', 'income'].map(t => (
             <button
               key={t}
@@ -108,7 +108,7 @@ export default function TransactionForm({ onSave, editing = null, onClose }) {
         {type === 'expense' && (
           <div className="animate-slide-up stagger-3">
             <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Spending Source</label>
-            <div className="flex gap-1.5 p-1 rounded-xl" style={{ background: 'var(--input-bg)' }}>
+            <div className="flex flex-wrap gap-1.5 p-1 rounded-xl" style={{ background: 'var(--input-bg)' }}>
               {[
                 { value: 'income', label: 'From Income' },
                 { value: 'savings', label: 'From Savings' },
@@ -201,12 +201,23 @@ export default function TransactionForm({ onSave, editing = null, onClose }) {
           <p className="text-sm font-semibold text-red-500 -mt-1 animate-fade-in">{error}</p>
         )}
 
-        <button
-          type="submit"
-          className="w-full py-3 btn-primary font-semibold"
-        >
-          {editing ? 'Save Changes' : 'Add Transaction'}
-        </button>
+        <div className="flex gap-2">
+          {editing && onDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="px-4 py-3 rounded-xl text-sm font-bold text-red-500 border border-red-500/30 hover:bg-red-500/10 active:scale-[0.97] transition-all duration-150"
+            >
+              Delete
+            </button>
+          )}
+          <button
+            type="submit"
+            className="flex-1 py-3 btn-primary font-semibold"
+          >
+            {editing ? 'Save Changes' : 'Add Transaction'}
+          </button>
+        </div>
       </form>
     </Modal>
   );
