@@ -1,17 +1,18 @@
 import { useState, useRef } from 'react';
-import { Download, Upload, Tag, Moon, Sun, Globe, User, Trash2 } from 'lucide-react';
+import { Download, Upload, Tag, Moon, Sun, Globe, User, Trash2, Palette } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useProfile } from '../../context/ProfileContext';
 import { useTransactions, useCategories, addCategory, deleteCategory } from '../../hooks/useData';
 import { downloadCSV, parseCSV } from '../../lib/export';
+import { tint } from '../../lib/color';
 import db from '../../lib/db';
 import Modal from '../ui/Modal';
 import Avatar from '../ui/Avatar';
 import AvatarPicker from '../ui/AvatarPicker';
 
 export default function SettingsPage() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, palette, paletteId, setPaletteId, palettes } = useTheme();
   const { currency, currencies, setCurrency, formatAmount } = useCurrency();
   const { userName, setUserName, avatarGradient, setAvatarGradient, avatarPhoto, setAvatarPhoto } = useProfile();
   const transactions = useTransactions();
@@ -35,11 +36,11 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-4 animate-fade-in">
-      <h2 className="text-xl font-black">Settings</h2>
+    <div className="space-y-4">
+          <h2 className="text-3xl font-extrabold tracking-tight">Settings</h2>
 
       <div className="space-y-2.5">
-        <SettingCard icon={User} label="Your Name" color="#6d28d9"
+        <SettingCard icon={User} label="Your Name" color="var(--color-primary-600)"
           action={
             <input
               type="text"
@@ -52,7 +53,7 @@ export default function SettingsPage() {
         />
 
         <div className="card p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#6d28d9' + '12' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: tint('var(--color-primary-600)') }}>
             <Avatar name={userName || 'User'} photo={avatarPhoto} size={32} />
           </div>
           <div className="flex-1 min-w-0">
@@ -72,11 +73,34 @@ export default function SettingsPage() {
           icon={theme === 'dark' ? Moon : Sun}
           label="Theme"
           description={`Currently using ${theme} mode`}
-          color="#6d28d9"
+          color="var(--color-primary-600)"
           action={
             <button onClick={toggleTheme} className="px-3 py-1.5 btn-primary text-sm">
               Switch to {theme === 'light' ? 'Dark' : 'Light'}
             </button>
+          }
+        />
+
+        <SettingCard
+          icon={Palette}
+          label="Colour Palette"
+          description={`Currently using ${palette.name}`}
+          color="var(--color-primary-600)"
+          action={
+            <div className="flex gap-1.5 flex-wrap justify-end">
+              {palettes.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => setPaletteId(p.id)}
+                  title={p.name}
+                  aria-label={p.name}
+                  className={`w-7 h-7 rounded-full transition-all duration-200 active:scale-90 ${
+                    paletteId === p.id ? 'ring-2 ring-offset-2 ring-primary-500 ring-offset-[var(--surface-solid)] scale-110' : 'hover:scale-110'
+                  }`}
+                  style={{ background: `linear-gradient(135deg, ${p.btn.join(', ')})` }}
+                />
+              ))}
+            </div>
           }
         />
 
@@ -91,7 +115,7 @@ export default function SettingsPage() {
               </span>
             </span>
           }
-          color="#6d28d9"
+          color="var(--color-primary-600)"
           action={
             <select
               value={currency.code}
@@ -105,7 +129,7 @@ export default function SettingsPage() {
           }
         />
 
-        <SettingCard icon={Download} label="Export Data" color="#6d28d9"
+        <SettingCard icon={Download} label="Export Data" color="var(--color-primary-600)"
           action={
             <button onClick={handleExport} className="p-2 rounded-xl border transition-all duration-200 hover:bg-primary-500/5 hover:scale-105 active:scale-95" style={{ borderColor: 'var(--border-solid)' }}>
               <Download size={16} style={{ color: 'var(--text-muted)' }} />
@@ -113,7 +137,7 @@ export default function SettingsPage() {
           }
         />
 
-        <SettingCard icon={Upload} label="Import Data" color="#6d28d9"
+        <SettingCard icon={Upload} label="Import Data" color="var(--color-primary-600)"
           action={
             <>
               <input ref={fileInputRef} type="file" accept=".csv" onChange={handleImport} className="hidden" />
@@ -140,7 +164,7 @@ export default function SettingsPage() {
           }
         />
 
-        <SettingCard icon={Tag} label="Manage Categories" description={`${categories.length} categories`} color="#6d28d9"
+        <SettingCard icon={Tag} label="Manage Categories" description={`${categories.length} categories`} color="var(--color-primary-600)"
           action={
             <button onClick={() => setShowCatManager(true)} className="px-3 py-1.5 rounded-lg text-sm font-semibold border hover:bg-primary-500/5 transition-all duration-200 hover:scale-105 active:scale-95" style={{ borderColor: 'var(--border-solid)' }}>
               Edit
@@ -172,7 +196,7 @@ export default function SettingsPage() {
 function SettingCard({ icon: Icon, label, description, color, action }) {
   return (
     <div className="card p-4 flex items-center gap-3.5">
-      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: color + '12' }}>
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: tint(color) }}>
         <Icon size={19} style={{ color }} />
       </div>
       <div className="flex-1 min-w-0">

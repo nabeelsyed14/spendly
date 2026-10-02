@@ -8,8 +8,8 @@ const RES = join(root, 'android', 'app', 'src', 'main', 'res');
 
 const GRADIENT = `
   <linearGradient id="bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-    <stop offset="0%" stop-color="#7c3aed"/>
-    <stop offset="100%" stop-color="#5b21b6"/>
+    <stop offset="0%" stop-color="#3a3a42"/>
+    <stop offset="100%" stop-color="#17171c"/>
   </linearGradient>`;
 
 const WALLET = `

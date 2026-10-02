@@ -1,11 +1,15 @@
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useTransactions } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useTheme } from '../../context/ThemeContext';
 import { subDays, format, parseISO, isWithinInterval } from 'date-fns';
+import TiltCard from '../ui/TiltCard';
 
 export default function TrendChart() {
   const transactions = useTransactions();
   const { formatAmount } = useCurrency();
+  const { palette } = useTheme();
+  const brand = palette.colors[600];
 
   const now = new Date();
   const days = 14;
@@ -27,15 +31,15 @@ export default function TrendChart() {
   }
 
   return (
-    <div className="glass-card p-6 animate-slide-up stagger-3">
-      <h3 className="text-lg font-bold mb-4">Daily Spending (14 days)</h3>
+    <TiltCard className="glass-card h-full p-6 animate-slide-up stagger-3">
+      <h3 className="text-xl font-extrabold mb-4">Daily Spending (14 days)</h3>
       <div className="h-44">
         <ResponsiveContainer>
           <AreaChart data={data}>
             <defs>
               <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6d28d9" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#6d28d9" stopOpacity={0} />
+                <stop offset="5%" stopColor={brand} stopOpacity={0.2} />
+                <stop offset="95%" stopColor={brand} stopOpacity={0} />
               </linearGradient>
             </defs>
             <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
@@ -51,10 +55,10 @@ export default function TrendChart() {
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
               }}
             />
-            <Area type="monotone" dataKey="amount" stroke="#6d28d9" strokeWidth={2} fill="url(#trendGrad)" animationDuration={1200} />
+            <Area type="monotone" dataKey="amount" stroke={brand} strokeWidth={2} fill="url(#trendGrad)" animationDuration={1200} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
-    </div>
+    </TiltCard>
   );
 }

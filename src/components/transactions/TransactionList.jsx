@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { Pencil, Trash2, Search, Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
 import * as LucideIcons from 'lucide-react';
 import TransactionForm from './TransactionForm';
 import { useTransactions, useCategories, addTransaction, updateTransaction, deleteTransaction } from '../../hooks/useData';
@@ -59,8 +60,8 @@ export default function TransactionList() {
   };
 
   return (
-    <div className="space-y-4 animate-fade-in">
-      <h2 className="text-xl font-black">Transactions</h2>
+    <div className="space-y-4">
+      <h2 className="text-3xl font-extrabold tracking-tight">Transactions</h2>
       <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
         <div className="relative flex-1">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
@@ -114,15 +115,19 @@ export default function TransactionList() {
                 <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
                   {format(new Date(dateKey), 'EEEE, MMM d')}
                 </p>
-                <p className={`text-sm font-semibold tabular-nums ${dayTotal >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                <p className={`text-base font-bold tabular-nums ${dayTotal >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                   {dayTotal >= 0 ? '+' : ''}{formatAmount(dayTotal)}
                 </p>
               </div>
               <div className="space-y-1">
-                {items.map(t => (
-                  <div
+                {items.map((t, rowIdx) => (
+                  <motion.div
                     key={t.id}
                     className="group card p-4 flex items-center gap-3"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.18, delay: Math.min(rowIdx * 0.03, 0.25) }}
+                    whileHover={{ y: -2, transition: { duration: 0.15 } }}
                   >
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
@@ -132,7 +137,7 @@ export default function TransactionList() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <p className="text-base font-semibold truncate">{t.category}</p>
+                        <p className="text-lg font-bold truncate">{t.category}</p>
                         {t.type === 'expense' && t.source === 'savings' && (
                           <span className="tag bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                             savings
@@ -144,7 +149,7 @@ export default function TransactionList() {
                       )}
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className={`text-sm font-semibold tabular-nums ${t.type === 'income' ? 'text-emerald-500' : 'text-red-500'}`}>
+                      <p className={`text-base font-bold tabular-nums ${t.type === 'income' ? 'text-emerald-500' : 'text-red-500'}`}>
                         {t.type === 'income' ? '+' : '-'}{formatAmount(t.amount)}
                       </p>
                     </div>
@@ -163,7 +168,7 @@ export default function TransactionList() {
                         <Trash2 size={14} />
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>

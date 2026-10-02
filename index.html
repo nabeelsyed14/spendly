@@ -10,13 +10,45 @@
     <meta name="apple-mobile-web-app-title" content="Spendly" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
+    <title>Spendly</title>
+    <style>
+      html, body { margin: 0; padding: 0; background: #f5f3fa; }
+      html.dark, html.dark body { background: #0d0a14; }
+      #root { min-height: 100dvh; }
+      .boot { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+      .boot-dot {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+        box-shadow: 0 10px 28px -8px rgba(109, 40, 217, 0.55);
+        animation: boot-pulse 1.1s ease-in-out infinite;
+      }
+      @keyframes boot-pulse {
+        0%, 100% { transform: scale(1); opacity: 0.85; }
+        50% { transform: scale(1.14); opacity: 1; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-dot { animation: none; }
+      }
+    </style>
+    <script>
+      try {
+        var t = localStorage.getItem('spendly-theme');
+        if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        if (t === 'dark') document.documentElement.classList.add('dark');
+      } catch (e) {}
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <title>Spendly</title>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    </noscript>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><div class="boot"><div class="boot-dot"></div></div></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -2,15 +2,16 @@ import { TrendingUp, TrendingDown, Minus, AlertTriangle, Target, Clock, BarChart
 import { useTransactions } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
 import { spendingVelocity, getCategoryTrends, monthlyProjection, habitPatterns, anomalyDetection } from '../../lib/insights';
+import { tint } from '../../lib/color';
 
 function InsightCard({ icon: Icon, title, children, color = 'var(--text)', className = '' }) {
   return (
     <div className={`glass-card p-5 animate-slide-up ${className}`}>
       <div className="flex items-center gap-2.5 mb-4">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: color + '12' }}>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: tint(color) }}>
           <Icon size={17} style={{ color }} />
         </div>
-        <h3 className="text-lg font-bold">{title}</h3>
+        <h3 className="text-xl font-extrabold">{title}</h3>
       </div>
       {children}
     </div>
@@ -28,7 +29,7 @@ function VelocityInsight() {
   return (
     <InsightCard icon={TrendingUp} title="Spending Velocity" color={color} className="stagger-1">
       <div className="flex items-baseline gap-2 mb-2">
-        <span className="text-2xl font-extrabold tabular-nums">{formatAmount(current)}</span>
+        <span className="text-3xl font-extrabold tabular-nums">{formatAmount(current)}</span>
         <span className="text-sm" style={{ color: 'var(--text-muted)' }}>/day avg</span>
       </div>
       <div className="flex items-center gap-1.5 p-2 rounded-xl" style={{ background: 'var(--input-bg)' }}>
@@ -49,7 +50,7 @@ function ProjectionInsight() {
   const progress = (dayOfMonth / daysInMonth) * 100;
 
   return (
-    <InsightCard icon={Target} title="Monthly Projection" color="#6d28d9" className="stagger-2">
+    <InsightCard icon={Target} title="Monthly Projection" color="var(--color-primary-600)" className="stagger-2">
       <p className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>
         Day {dayOfMonth} of {daysInMonth} — {Math.round(progress)}% through the month
       </p>
@@ -59,11 +60,11 @@ function ProjectionInsight() {
       <div className="grid grid-cols-2 gap-2">
         <div className="p-2.5 rounded-xl" style={{ background: 'var(--input-bg)' }}>
           <p className="text-sm uppercase tracking-wider font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>Daily Rate</p>
-          <p className="text-base font-bold">{formatAmount(dailyRate)}</p>
+          <p className="text-lg font-extrabold">{formatAmount(dailyRate)}</p>
         </div>
         <div className="p-2.5 rounded-xl" style={{ background: 'var(--input-bg)' }}>
           <p className="text-sm uppercase tracking-wider font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>Projected</p>
-          <p className="text-base font-bold">{formatAmount(projected)}</p>
+          <p className="text-lg font-extrabold">{formatAmount(projected)}</p>
         </div>
       </div>
     </InsightCard>
@@ -76,7 +77,7 @@ function HabitInsight() {
   const maxVal = Math.max(...byDay, 1);
 
   return (
-    <InsightCard icon={Clock} title="Habit Patterns" color="#6d28d9" className="stagger-3">
+    <InsightCard icon={Clock} title="Habit Patterns" color="var(--color-primary-600)" className="stagger-3">
       <div className="flex items-end gap-1 h-16 mb-3">
         {byDay.map((val, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -180,7 +181,7 @@ function TrendInsight() {
 export default function InsightsPage() {
   return (
     <div className="space-y-3">
-      <h2 className="text-xl font-black">Insights</h2>
+      <h2 className="text-3xl font-extrabold tracking-tight">Insights</h2>
 
       <VelocityInsight />
       <ProjectionInsight />

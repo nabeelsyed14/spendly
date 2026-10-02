@@ -34,12 +34,7 @@ export function ProfileProvider({ children }) {
     }
   }, []);
 
-  const getGreeting = useCallback(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  }, []);
+  const getGreeting = useCallback(() => 'Hello', []);
 
   return (
     <ProfileContext.Provider value={{

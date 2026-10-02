@@ -3,7 +3,9 @@ import { ShieldCheck, Plus, Pencil, Trash2, TrendingUp, TrendingDown } from 'luc
 import { useHealthGoals, useTransactions, useCategories, addHealthGoal, updateHealthGoal, deleteHealthGoal } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
 import { calculateGoalActual, calculateGoalRating, calculateHealthScore } from '../../lib/insights';
+import { tint } from '../../lib/color';
 import Modal from '../ui/Modal';
+import TiltCard from '../ui/TiltCard';
 
 function AnimatedScore({ score }) {
   const [displayed, setDisplayed] = useState(0);
@@ -53,13 +55,14 @@ export default function HealthScore() {
   ];
 
   return (
-    <div className="glass-card p-6 animate-slide-up stagger-2">
+    <>
+    <TiltCard className="glass-card h-full p-6 animate-slide-up stagger-2">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-primary-500/10 flex items-center justify-center">
             <ShieldCheck size={18} className="text-primary-500" />
           </div>
-          <h3 className="text-lg font-bold">Budget Health</h3>
+          <h3 className="text-xl font-extrabold">Budget Health</h3>
         </div>
         <button
           onClick={() => { setEditing(null); setShowForm(true); }}
@@ -79,7 +82,7 @@ export default function HealthScore() {
         <>
           {score !== null && (
             <div className="flex items-center gap-3 mb-4 p-4 rounded-2xl animate-scale-in glow-sm" style={{ background: 'var(--input-bg)' }}>
-              <div className="text-3xl font-extrabold tabular-nums" style={{ color: getScoreColor(score) }}>
+              <div className="text-4xl font-extrabold tabular-nums" style={{ color: getScoreColor(score) }}>
                 <AnimatedScore score={score} />
               </div>
               <div>
@@ -107,7 +110,7 @@ export default function HealthScore() {
                   className={`flex items-center gap-2.5 p-3 rounded-2xl transition-all duration-200 hover:shadow-sm animate-slide-up stagger-${Math.min(i + 1, 6)}`}
                   style={{ background: 'var(--input-bg)' }}
                 >
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: color + '15' }}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: tint(color, 9) }}>
                     <TypeIcon size={16} style={{ color }} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -152,6 +155,7 @@ export default function HealthScore() {
           </div>
         </>
       )}
+      </TiltCard>
 
       {showForm && (
         <HealthGoalForm
@@ -161,7 +165,7 @@ export default function HealthScore() {
           onClose={() => { setShowForm(false); setEditing(null); }}
         />
       )}
-    </div>
+    </>
   );
 }
 
@@ -223,7 +227,7 @@ function HealthGoalForm({ editing, categories, goalTypes, onClose }) {
                   type === value ? 'bg-primary-500/10' : 'hover:bg-primary-500/5'
                 }`}
               >
-                <Icon size={16} style={{ color: type === value ? '#6d28d9' : 'var(--text-muted)' }} />
+                <Icon size={16} style={{ color: type === value ? 'var(--color-primary-600)' : 'var(--text-muted)' }} />
                 <span className="text-sm font-medium">{label}</span>
               </button>
             ))}

@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import * as LucideIcons from 'lucide-react';
+import { motion } from 'framer-motion';
 import Modal from '../ui/Modal';
-import { useCategories } from '../../hooks/useData';
+import { useCategories, useTransactions, useSavings } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
+import { getSavingsBalance } from '../../lib/savings';
 
 export default function TransactionForm({ onSave, editing = null, onClose }) {
   const categories = useCategories();
-  const { currency } = useCurrency();
+  const transactions = useTransactions();
+  const savings = useSavings();
+  const { currency, formatAmount } = useCurrency();
   const [type, setType] = useState(editing?.type || 'expense');
   const [amount, setAmount] = useState(editing?.amount?.toString() || '');
   const [category, setCategory] = useState(editing?.category || '');
@@ -17,15 +21,25 @@ export default function TransactionForm({ onSave, editing = null, onClose }) {
   );
   const [notes, setNotes] = useState(editing?.notes || '');
   const [source, setSource] = useState(editing?.source || 'income');
+  const [error, setError] = useState('');
 
   const filtered = categories.filter(c => c.type === type);
+  const savingsBalance = getSavingsBalance(savings, transactions);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!amount || !category) return;
+
+    const value = parseFloat(amount);
+    if (type === 'expense' && source === 'savings' && value > savingsBalance) {
+      setError(`Not enough savings — available ${formatAmount(savingsBalance)}`);
+      return;
+    }
+    setError('');
+
     onSave({
       type,
-      amount: parseFloat(amount),
+      amount: value,
       category,
       description,
       date: new Date(date).toISOString(),
@@ -55,16 +69,19 @@ export default function TransactionForm({ onSave, editing = null, onClose }) {
               key={t}
               type="button"
               onClick={() => { setType(t); setCategory(''); }}
-              className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-[0.97] capitalize ${
-                type === t
-                  ? t === 'expense'
-                    ? 'bg-red-500 text-white shadow-md'
-                    : 'bg-emerald-500 text-white shadow-md'
-                  : ''
+              className={`relative flex-1 py-3 rounded-lg text-sm font-bold transition-colors duration-200 active:scale-[0.97] capitalize ${
+                type === t ? 'text-white' : ''
               }`}
               style={type !== t ? { color: 'var(--text-muted)' } : {}}
             >
-              {t}
+              {type === t && (
+                <motion.span
+                  layoutId="txn-type-pill"
+                  className={`absolute inset-0 rounded-lg shadow-md ${t === 'expense' ? 'bg-red-500' : 'bg-emerald-500'}`}
+                  transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                />
+              )}
+              <span className="relative z-10">{t}</span>
             </button>
           ))}
         </div>
@@ -100,18 +117,26 @@ export default function TransactionForm({ onSave, editing = null, onClose }) {
                   key={s.value}
                   type="button"
                   onClick={() => setSource(s.value)}
-                  className={`flex-1 py-3 rounded-lg text-sm font-semibold transition-all duration-200 active:scale-[0.97] ${
-                    source === s.value
-                      ? s.value === 'income'
-                        ? 'bg-primary-500 text-white shadow-md'
-                        : 'bg-amber-500 text-white shadow-md'
-                      : ''
+                  className={`relative flex-1 py-3 rounded-lg text-sm font-bold transition-colors duration-200 active:scale-[0.97] ${
+                    source === s.value ? 'text-white' : ''
                   }`}
                   style={source !== s.value ? { color: 'var(--text-muted)' } : {}}
                 >
-                  {s.label}
+                  {source === s.value && (
+                    <motion.span
+                      layoutId="txn-source-pill"
+                      className={`absolute inset-0 rounded-lg shadow-md ${s.value === 'income' ? 'bg-primary-500' : 'bg-amber-500'}`}
+                      transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                    />
+                  )}
+                  <span className="relative z-10">{s.label}</span>
                 </button>
               ))}
+            </div>
+            <div className="flex items-center justify-between mt-1.5 px-1">
+              <p className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>
+                Savings pot: <span className="font-bold" style={{ color: 'var(--color-primary-600)' }}>{formatAmount(savingsBalance)}</span>
+              </p>
             </div>
           </div>
         )}
@@ -171,6 +196,10 @@ export default function TransactionForm({ onSave, editing = null, onClose }) {
             className="input w-full resize-none"
           />
         </div>
+
+        {error && (
+          <p className="text-sm font-semibold text-red-500 -mt-1 animate-fade-in">{error}</p>
+        )}
 
         <button
           type="submit"

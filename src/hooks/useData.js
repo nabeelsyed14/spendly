@@ -31,6 +31,11 @@ export function useHealthGoals() {
   return goals;
 }
 
+export function useSavings() {
+  const entries = useLiveQuery(() => db.savings.orderBy('date').reverse().toArray()) || [];
+  return entries;
+}
+
 export async function addTransaction(data) {
   return db.transactions.add({ ...data, createdAt: new Date().toISOString() });
 }
@@ -65,6 +70,14 @@ export async function updateHealthGoal(id, data) {
 
 export async function deleteHealthGoal(id) {
   return db.healthGoals.delete(id);
+}
+
+export async function addSavingsEntry(data) {
+  return db.savings.add({ ...data, createdAt: new Date().toISOString() });
+}
+
+export async function deleteSavingsEntry(id) {
+  return db.savings.delete(id);
 }
 
 export async function addCategory(data) {

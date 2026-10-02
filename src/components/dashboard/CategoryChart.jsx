@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTransactions, useCategories } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
 import { getCategoryTotals } from '../../lib/insights';
+import TiltCard from '../ui/TiltCard';
 
 export default function CategoryChart() {
   const transactions = useTransactions();
@@ -19,12 +20,12 @@ export default function CategoryChart() {
 
   if (chartData.length === 0) {
     return (
-      <div className="glass-card p-6 animate-fade-in">
-        <h3 className="text-lg font-bold mb-3">Spending by Category</h3>
+      <TiltCard className="glass-card h-full p-6 animate-fade-in">
+        <h3 className="text-xl font-extrabold mb-3">Spending by Category</h3>
         <div className="flex flex-col items-center justify-center py-8">
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No expenses yet this month</p>
         </div>
-      </div>
+      </TiltCard>
     );
   }
 
@@ -32,9 +33,9 @@ export default function CategoryChart() {
   const maxVal = chartData[0]?.value || 1;
 
   return (
-    <div className="glass-card p-6 animate-slide-up stagger-1">
+    <TiltCard className="glass-card h-full p-6 animate-slide-up stagger-1">
       <div className="flex items-center justify-between mb-5">
-        <h3 className="text-lg font-bold">Spending by Category</h3>
+        <h3 className="text-xl font-extrabold">Spending by Category</h3>
         <span className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>{formatAmount(total, { compact: true })}</span>
       </div>
 
@@ -82,6 +83,6 @@ export default function CategoryChart() {
           );
         })}
       </div>
-    </div>
+    </TiltCard>
   );
 }

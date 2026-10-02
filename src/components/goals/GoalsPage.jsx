@@ -28,10 +28,10 @@ export default function GoalsPage() {
   ];
 
   return (
-    <div className="space-y-4 animate-fade-in">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-black">Health Goals</h2>
+          <h2 className="text-3xl font-extrabold tracking-tight">Health Goals</h2>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Set targets and track your budget health</p>
         </div>
         <button
@@ -210,7 +210,7 @@ function HealthGoalForm({ editing, categories, goalTypes, onClose }) {
                   type === value ? 'bg-primary-500/10' : 'hover:bg-primary-500/5'
                 }`}
               >
-                <Icon size={16} style={{ color: type === value ? '#6d28d9' : 'var(--text-muted)' }} />
+                <Icon size={16} style={{ color: type === value ? 'var(--color-primary-600)' : 'var(--text-muted)' }} />
                 <span className="text-sm font-medium">{label}</span>
               </button>
             ))}

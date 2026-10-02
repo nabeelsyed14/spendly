@@ -34,7 +34,7 @@ export default function Sidebar() {
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `group relative flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-200 active:scale-[0.97] ${
+              `group relative flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-200 active:scale-[0.97] ${
                 isActive
                   ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 glow-sm'
                   : 'hover:bg-primary-500/5'

@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Camera, X, Check } from 'lucide-react';
+import { Camera, X } from 'lucide-react';
 import Avatar, { GRADIENTS } from './Avatar';
 
 export default function AvatarPicker({ name = 'User', currentPhoto, currentGradient, onSelectGradient, onSelectPhoto, onRemovePhoto }) {

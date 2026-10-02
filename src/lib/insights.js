@@ -117,7 +117,7 @@ export function getCategoryTrends(transactions) {
   return result;
 }
 
-export function monthlyProjection(transactions, date = new Date()) {
+export function monthlyProjection(transactions) {
   const now = new Date();
   const dayOfMonth = getDate(now);
   const daysInMonth = differenceInCalendarDays(endOfMonth(now), startOfMonth(now)) + 1;
@@ -268,13 +268,15 @@ export function generateMonthlyReport(transactions, categories, date = new Date(
   };
 }
 
-export function generateAllTimeReport(transactions) {
+export function generateAllTimeReport(transactions, savings = []) {
   const expenses = transactions.filter(t => t.type === 'expense');
   const income = transactions.filter(t => t.type === 'income');
   const totalExpense = expenses.reduce((s, t) => s + t.amount, 0);
   const totalIncome = income.reduce((s, t) => s + t.amount, 0);
   const incomeSpend = expenses.filter(t => t.source !== 'savings').reduce((s, t) => s + t.amount, 0);
   const savingsSpend = expenses.filter(t => t.source === 'savings').reduce((s, t) => s + t.amount, 0);
+  const totalAllocated = savings.filter(s => s.kind === 'deposit').reduce((s, x) => s + x.amount, 0);
+  const totalWithdrawn = savings.filter(s => s.kind === 'withdraw').reduce((s, x) => s + x.amount, 0);
 
   const catTotals = {};
   expenses.forEach(t => {
@@ -286,21 +288,38 @@ export function generateAllTimeReport(transactions) {
     .slice(0, 8)
     .map(([name, amount]) => ({ name, amount, percent: totalExpense > 0 ? Math.round((amount / totalExpense) * 100) : 0 }));
 
-  // Monthly breakdown
+  // Monthly breakdown (income, expense, savings activity per month)
   const monthlyMap = {};
+  const monthEntry = (key) => {
+    if (!monthlyMap[key]) monthlyMap[key] = { income: 0, expense: 0, savingsSpend: 0, allocated: 0, withdrawn: 0 };
+    return monthlyMap[key];
+  };
   transactions.forEach(t => {
     const d = typeof t.date === 'string' ? parseISO(t.date) : t.date;
-    const key = format(d, 'yyyy-MM');
-    if (!monthlyMap[key]) monthlyMap[key] = { income: 0, expense: 0 };
-    if (t.type === 'income') monthlyMap[key].income += t.amount;
-    else monthlyMap[key].expense += t.amount;
+    const entry = monthEntry(format(d, 'yyyy-MM'));
+    if (t.type === 'income') entry.income += t.amount;
+    else {
+      entry.expense += t.amount;
+      if (t.source === 'savings') entry.savingsSpend += t.amount;
+    }
+  });
+  savings.forEach(s => {
+    const d = typeof s.date === 'string' ? parseISO(s.date) : s.date;
+    const entry = monthEntry(format(d, 'yyyy-MM'));
+    if (s.kind === 'deposit') entry.allocated += s.amount;
+    else entry.withdrawn += s.amount;
   });
 
   const monthlyBreakdown = Object.entries(monthlyMap)
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([month, data]) => ({
       month: format(parseISO(month + '-01'), 'MMM yyyy'),
-      ...data,
+      income: data.income,
+      expense: data.expense,
+      allocated: data.allocated,
+      withdrawn: data.withdrawn,
+      savingsSpend: data.savingsSpend,
+      saved: data.allocated - data.withdrawn - data.savingsSpend,
       net: data.income - data.expense,
     }));
 
@@ -310,6 +329,8 @@ export function generateAllTimeReport(transactions) {
     netSavings: totalIncome - totalExpense,
     incomeSpend,
     savingsSpend,
+    totalAllocated,
+    totalWithdrawn,
     savingsRate: totalIncome > 0 ? Math.round(((totalIncome - incomeSpend) / totalIncome) * 100) : 0,
     transactionCount: transactions.length,
     topCategories,
