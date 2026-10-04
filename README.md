@@ -9,7 +9,8 @@ A personal budget tracker for income, expenses, and savings goals. Runs in the b
 - Health scoring — spending/earning targets scored on a 1-10 scale
 - Spending velocity — daily burn rate and month-end projections
 - Category breakdowns with trend detection
-- Reports — monthly and all-time income/expense/balance/savings rate
+- Reports — monthly and all-time views with a month picker and day-by-day drill-down
+- CSV import/export — on-device parsing, review-before-import, export saved straight to Downloads on Android
 - Dark/light theme with manual toggle
 - Avatar customization (gradient picker or photo)
 - Installable web app (PWA)

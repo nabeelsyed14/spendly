@@ -1,4 +1,7 @@
 import { format } from 'date-fns';
+import { Capacitor, registerPlugin } from '@capacitor/core';
+
+const DownloadsExport = registerPlugin('DownloadsExport');
 
 export function transactionsToCSV(transactions) {
   const headers = ['Date', 'Type', 'Category', 'Amount', 'Description', 'Notes'];
@@ -14,7 +17,7 @@ export function transactionsToCSV(transactions) {
       dateStr,
       t.type,
       t.category,
-      t.amount.toFixed(2),
+      Number(t.amount || 0).toFixed(2),
       `"${(t.description || '').replace(/"/g, '""')}"`,
       `"${(t.notes || '').replace(/"/g, '""')}"`,
     ];
@@ -23,21 +26,44 @@ export function transactionsToCSV(transactions) {
   return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
 }
 
-export function downloadCSV(transactions, filename = 'spendly-export.csv') {
+// Returns where the file was saved (e.g. 'Downloads') on native platforms,
+// or null on web where the browser handles the download itself.
+export async function downloadCSV(transactions, filename = 'spendly-export.csv') {
   const csv = transactionsToCSV(transactions);
+
+  if (Capacitor.isNativePlatform()) {
+    // Android WebView has no download listener, so blob anchors are a no-op —
+    // a small native plugin writes into MediaStore.Downloads instead.
+    await DownloadsExport.saveCsv({ filename, data: csv });
+    return 'Downloads';
+  }
+
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
+  link.href = url;
   link.download = filename;
+  link.style.display = 'none';
+  document.body.appendChild(link);
   link.click();
-  URL.revokeObjectURL(link.href);
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+  return null;
 }
 
+const normalizeHeader = (h) => h.replace(/\(.*?\)/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+const findValue = (row, key) => {
+  if (row[key]) return row[key];
+  const hit = Object.entries(row).find(([k]) => k.startsWith(key));
+  return hit ? hit[1] : '';
+};
+
 export function parseCSV(text) {
-  const lines = text.trim().split('\n');
+  const lines = text.trim().replace(/^\uFEFF/, '').split('\n');
   if (lines.length < 2) return [];
 
-  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+  const headers = lines[0].split(',').map(normalizeHeader);
   return lines.slice(1).map(line => {
     const values = [];
     let current = '';
@@ -51,15 +77,16 @@ export function parseCSV(text) {
     values.push(current);
 
     const row = {};
-    headers.forEach((h, i) => { row[h] = values[i] || ''; });
+    headers.forEach((h, i) => { row[h] = (values[i] || '').trim(); });
 
+    const type = findValue(row, 'type').toLowerCase();
     return {
-      type: row.type || 'expense',
-      category: row.category || 'Other',
-      amount: parseFloat(row.amount) || 0,
-      date: row.date || new Date().toISOString(),
-      description: row.description || '',
-      notes: row.notes || '',
+      type: type === 'income' ? 'income' : 'expense',
+      category: findValue(row, 'category') || 'Other',
+      amount: Math.abs(parseFloat(findValue(row, 'amount').replace(/[^\d.-]/g, ''))) || 0,
+      date: findValue(row, 'date') || new Date().toISOString(),
+      description: findValue(row, 'description'),
+      notes: findValue(row, 'notes'),
     };
   }).filter(t => t.amount > 0);
 }

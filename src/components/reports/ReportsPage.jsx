@@ -8,6 +8,8 @@ import { useTheme } from '../../context/ThemeContext';
 import { generateMonthlyReport, generateAllTimeReport } from '../../lib/insights';
 import { getSavingsBalance } from '../../lib/savings';
 import { tint } from '../../lib/color';
+import MonthPicker from './MonthPicker';
+import DayCalendar from './DayCalendar';
 
 export default function ReportsPage() {
   const transactions = useTransactions();
@@ -17,8 +19,9 @@ export default function ReportsPage() {
   const { palette } = useTheme();
   const [view, setView] = useState('monthly');
   const [showAllMonths, setShowAllMonths] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date());
 
-  const monthlyReport = generateMonthlyReport(transactions, categories);
+  const monthlyReport = generateMonthlyReport(transactions, categories, selectedMonth);
   const allTimeReport = generateAllTimeReport(transactions, savingsEntries);
   const report = view === 'monthly' ? monthlyReport : allTimeReport;
   const savingsBalance = getSavingsBalance(savingsEntries, transactions);
@@ -86,9 +89,12 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {view === 'monthly' && (
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{monthlyReport.month}</p>
-      )}
+      <div className="flex items-center flex-wrap gap-x-4 gap-y-1">
+        {view === 'monthly' && (
+          <MonthPicker selected={selectedMonth} onChange={setSelectedMonth} transactions={transactions} />
+        )}
+        <DayCalendar transactions={transactions} selectedMonth={selectedMonth} categories={categories} />
+      </div>
 
       <div className="grid grid-cols-2 gap-2">
         <StatCard icon={TrendingUp} label="Income" value={formatAmount(report.totalIncome)} color="#22c55e" delay={1} />

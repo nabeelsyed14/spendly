@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { PiggyBank, Plus, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { PiggyBank, Plus, ArrowUpRight, ArrowDownLeft, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
-import { useSavings, useTransactions, addSavingsEntry } from '../../hooks/useData';
+import { useSavings, useTransactions, addSavingsEntry, deleteSavingsEntry } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
 import { getSavingsBalance, getSavingsMonthStats } from '../../lib/savings';
 import AnimatedNumber from '../ui/AnimatedNumber';
@@ -18,6 +18,12 @@ export default function SavingsCard() {
   const balance = getSavingsBalance(savings, transactions);
   const { allocated, spent } = getSavingsMonthStats(savings, transactions);
   const recent = savings.slice(0, 3);
+
+  const handleDelete = async (id) => {
+    if (confirm('Delete this savings entry?')) {
+      await deleteSavingsEntry(id);
+    }
+  };
 
   return (
     <>
@@ -94,9 +100,18 @@ export default function SavingsCard() {
                   </p>
                 </div>
               </div>
-              <span className="text-sm font-bold tabular-nums flex-shrink-0">
-                {entry.kind === 'deposit' ? '+' : '−'}{formatAmount(entry.amount)}
-              </span>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <span className="text-sm font-bold tabular-nums">
+                  {entry.kind === 'deposit' ? '+' : '−'}{formatAmount(entry.amount)}
+                </span>
+                <button
+                  onClick={() => handleDelete(entry.id)}
+                  aria-label="Delete savings entry"
+                  className="p-1.5 rounded-lg text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all duration-150 active:scale-90"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
           ))}
         </div>

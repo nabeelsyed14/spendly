@@ -48,6 +48,10 @@ export async function deleteTransaction(id) {
   return db.transactions.delete(id);
 }
 
+export async function bulkAddTransactions(rows) {
+  return db.transactions.bulkAdd(rows.map(r => ({ ...r, createdAt: new Date().toISOString() })));
+}
+
 export async function addGoal(data) {
   return db.goals.add({ ...data, createdAt: new Date().toISOString() });
 }

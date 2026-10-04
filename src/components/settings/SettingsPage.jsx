@@ -1,15 +1,16 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Download, Upload, Tag, Moon, Sun, Globe, User, Trash2, Palette } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useProfile } from '../../context/ProfileContext';
 import { useTransactions, useCategories, addCategory, deleteCategory } from '../../hooks/useData';
-import { downloadCSV, parseCSV } from '../../lib/export';
+import { downloadCSV } from '../../lib/export';
 import { tint } from '../../lib/color';
 import db from '../../lib/db';
 import Modal from '../ui/Modal';
 import Avatar from '../ui/Avatar';
 import AvatarPicker from '../ui/AvatarPicker';
+import ImportModal from '../import/ImportModal';
 
 export default function SettingsPage() {
   const { theme, toggleTheme, palette, paletteId, setPaletteId, palettes } = useTheme();
@@ -19,20 +20,19 @@ export default function SettingsPage() {
   const categories = useCategories();
   const [showCatManager, setShowCatManager] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
-  const fileInputRef = useRef(null);
+  const [showImport, setShowImport] = useState(false);
 
-  const handleExport = () => downloadCSV(transactions);
-
-  const handleImport = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const text = await file.text();
-    const parsed = parseCSV(text);
-    if (parsed.length > 0) {
-      await db.transactions.bulkAdd(parsed.map(t => ({ ...t, createdAt: new Date().toISOString() })));
-      alert(`Imported ${parsed.length} transactions`);
+  const handleExport = async () => {
+    if (!transactions.length) {
+      alert('No transactions to export.');
+      return;
     }
-    e.target.value = '';
+    try {
+      const where = await downloadCSV(transactions);
+      if (where) alert(`Saved spendly-export.csv to ${where}`);
+    } catch (e) {
+      alert(`Export failed: ${e?.message || e}`);
+    }
   };
 
   return (
@@ -137,14 +137,11 @@ export default function SettingsPage() {
           }
         />
 
-        <SettingCard icon={Upload} label="Import Data" color="var(--color-primary-600)"
+        <SettingCard icon={Upload} label="Import Data" description="Import a CSV export" color="var(--color-primary-600)"
           action={
-            <>
-              <input ref={fileInputRef} type="file" accept=".csv" onChange={handleImport} className="hidden" />
-              <button onClick={() => fileInputRef.current?.click()} className="p-2 rounded-xl border transition-all duration-200 hover:bg-primary-500/5 hover:scale-105 active:scale-95" style={{ borderColor: 'var(--border-solid)' }}>
-                <Upload size={16} style={{ color: 'var(--text-muted)' }} />
-              </button>
-            </>
+            <button onClick={() => setShowImport(true)} className="p-2 rounded-xl border transition-all duration-200 hover:bg-primary-500/5 hover:scale-105 active:scale-95" style={{ borderColor: 'var(--border-solid)' }}>
+              <Upload size={16} style={{ color: 'var(--text-muted)' }} />
+            </button>
           }
         />
 
@@ -152,8 +149,8 @@ export default function SettingsPage() {
           action={
             <button
               onClick={async () => {
-                if (confirm('Delete ALL transactions? This cannot be undone.')) {
-                  await db.transactions.clear();
+                if (confirm('Delete ALL transactions and savings entries? This cannot be undone.')) {
+                  await Promise.all([db.transactions.clear(), db.savings.clear()]);
                 }
               }}
               className="p-2 rounded-xl border transition-all duration-200 hover:bg-red-500/5 text-red-500 hover:scale-105 active:scale-95"
@@ -172,6 +169,10 @@ export default function SettingsPage() {
           }
         />
       </div>
+
+      {showImport && (
+        <ImportModal isOpen={true} onClose={() => setShowImport(false)} categories={categories} />
+      )}
 
       {showAvatarPicker && (
         <Modal isOpen={true} onClose={() => setShowAvatarPicker(false)} title="Choose Avatar">
