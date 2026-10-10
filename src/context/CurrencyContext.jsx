@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
 const CURRENCIES = [
   { code: 'USD', symbol: '$', name: 'US Dollar', locale: 'en-US' },
@@ -40,31 +40,58 @@ export function CurrencyProvider({ children }) {
     setHasChosen(true);
   }, []);
 
+  // Pre-build all format variants keyed by (showSymbol, compact, minFractionDigits).
+  // Creating Intl.NumberFormat once per currency change (not on every call) is a major
+  // perf win: formatAmount is invoked ~60 times per render across cards and list rows.
+  const formatterCache = useMemo(() => {
+    const isZeroDecimal = currency.code === 'JPY';
+    const maxFrac = isZeroDecimal ? 0 : 2;
+
+    const make = (showSymbol, compact, minFrac) => {
+      try {
+        return new Intl.NumberFormat(currency.locale, {
+          style: showSymbol ? 'currency' : 'decimal',
+          ...(showSymbol ? { currency: currency.code, currencyDisplay: 'symbol' } : {}),
+          minimumFractionDigits: minFrac,
+          maximumFractionDigits: maxFrac,
+          ...(compact ? { notation: 'compact', compactDisplay: 'short' } : {}),
+        });
+      } catch {
+        return null;
+      }
+    };
+
+    return {
+      isZeroDecimal,
+      // [showSymbol][compact][minFrac]
+      fmts: {
+        true:  { false: { 0: make(true, false, 0), 2: make(true, false, 2) },
+                 true:  { 0: make(true, true,  0), 2: make(true, true,  2) } },
+        false: { false: { 0: make(false, false, 0), 2: make(false, false, 2) },
+                 true:  { 0: make(false, true,  0), 2: make(false, true,  2) } },
+      },
+    };
+  }, [currency]);
+
   const formatAmount = useCallback((value, opts = {}) => {
     const { showSymbol = true, compact = false } = opts;
     if (typeof value !== 'number' || isNaN(value)) return showSymbol ? withSymbol('0') : '0';
 
-    const isZeroDecimal = currency.code === 'JPY';
+    const { isZeroDecimal, fmts } = formatterCache;
     const hasCents = !isZeroDecimal && Math.round(Math.abs(value) * 100) % 100 !== 0;
-    const minFractionDigits = isZeroDecimal || !hasCents ? 0 : 2;
+    const minFrac = hasCents ? 2 : 0;
+    const fmt = fmts[showSymbol][compact][minFrac];
 
-    try {
-      const formatter = new Intl.NumberFormat(currency.locale, {
-        style: showSymbol ? 'currency' : 'decimal',
-        currency: showSymbol ? currency.code : undefined,
-        currencyDisplay: 'symbol',
-        minimumFractionDigits: minFractionDigits,
-        maximumFractionDigits: isZeroDecimal ? 0 : 2,
-        ...(compact ? { notation: 'compact', compactDisplay: 'short' } : {}),
-      });
+    if (fmt) {
       // Intl inserts U+00A0 (non-breaking space) after letter symbols like "AED",
       // which makes long amounts unbreakable and overflows narrow containers.
-      return formatter.format(value).replace(/\u00A0/g, ' ');
-    } catch {
-      const num = hasCents ? value.toFixed(2) : value.toFixed(0);
-      return showSymbol ? withSymbol(num) : num;
+      return fmt.format(value).replace(/\u00A0/g, ' ');
     }
-  }, [currency, withSymbol]);
+
+    // Fallback for environments where Intl construction failed.
+    const num = hasCents ? value.toFixed(2) : value.toFixed(0);
+    return showSymbol ? withSymbol(num) : num;
+  }, [formatterCache, withSymbol]);
 
   return (
     <CurrencyContext.Provider value={{ currency, currencies: CURRENCIES, setCurrency, formatAmount, hasChosenCurrency: hasChosen }}>

@@ -20,7 +20,7 @@
 @layer base {
   :root {
     --bg: #f5f3fa;
-    --surface: rgba(255, 255, 255, 0.72);
+    --surface: rgba(255, 255, 255, 0.6);
     --surface-solid: #ffffff;
     --surface-elevated: rgba(255, 255, 255, 0.88);
     --text: #16121f;
@@ -163,14 +163,15 @@
   background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
 }
 
-/* ── Floating orbs ── */
+/* ── Floating orbs (static ambient blobs — drift animation removed: it
+   kept large blurred layers repainting on every page, killing scroll) ── */
 .floating-orb {
   position: absolute;
   border-radius: 50%;
   filter: blur(70px);
   pointer-events: none;
   z-index: -1;
-  animation: float-drift 20s ease-in-out infinite;
+  animation: none;
 }
 .floating-orb-1 {
   width: 320px;
@@ -178,7 +179,6 @@
   top: -60px;
   right: -80px;
   background: rgba(var(--brand-mesh1), 0.12);
-  animation-duration: 25s;
 }
 .floating-orb-2 {
   width: 260px;
@@ -186,8 +186,6 @@
   bottom: 10%;
   left: -70px;
   background: rgba(var(--brand-mesh2), 0.08);
-  animation-duration: 30s;
-  animation-delay: -5s;
 }
 .floating-orb-3 {
   width: 220px;
@@ -195,15 +193,6 @@
   top: 40%;
   right: 10%;
   background: rgba(var(--brand-mesh3), 0.07);
-  animation-duration: 22s;
-  animation-delay: -10s;
-}
-
-@keyframes float-drift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(30px, -20px) scale(1.05); }
-  50% { transform: translate(-20px, 30px) scale(0.95); }
-  75% { transform: translate(15px, 15px) scale(1.02); }
 }
 
 @layer utilities {
@@ -221,8 +210,16 @@
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     border: 1px solid var(--border);
     border-radius: 1.25rem;
-    box-shadow: var(--card-shadow);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.22),
+      inset 0 -1px 1px rgba(255, 255, 255, 0.05),
+      var(--card-shadow);
     transition: box-shadow 0.25s ease, transform 0.25s ease;
+  }
+  .dark .glass-card {
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.14),
+      var(--card-shadow);
   }
 
   .glass-strong {
@@ -256,12 +253,12 @@
     -webkit-backdrop-filter: blur(14px) saturate(160%);
     border: 1px solid var(--border);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 1px 1px rgba(255, 255, 255, 0.55),
       0 5px 14px -5px rgba(15, 10, 40, 0.25);
   }
   .dark .glass-btn {
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      inset 0 1px 1px rgba(255, 255, 255, 0.12),
       0 5px 14px -5px rgba(0, 0, 0, 0.5);
   }
 
@@ -441,7 +438,23 @@
     transition: box-shadow 0.15s ease, color 0.15s ease, transform 0.1s ease;
   }
   .dock-active {
-    box-shadow: var(--glow-color) 0 0 12px;
+    background: linear-gradient(135deg, var(--brand-btn));
+    color: #fff;
+    box-shadow: 0 6px 16px -6px rgba(var(--brand-rgb), 0.55);
+  }
+
+  /* ── Floating mobile dock: levitation shadow + top glass edge ── */
+  .mobile-dock {
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.16),
+      0 18px 40px -12px rgba(0, 0, 0, 0.55),
+      0 4px 14px -6px rgba(var(--brand-rgb), 0.3);
+  }
+  .dark .mobile-dock {
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.2),
+      0 18px 40px -12px rgba(0, 0, 0, 0.7),
+      0 4px 14px -6px rgba(var(--brand-rgb), 0.35);
   }
   .dock-inactive {
     box-shadow: none;
@@ -450,6 +463,8 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
+
+
 }
 
 @keyframes fade-in {

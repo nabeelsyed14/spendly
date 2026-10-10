@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import * as LucideIcons from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getCategoryIconComponent } from '../../lib/icons';
 import Modal from '../ui/Modal';
 import { useCategories, useTransactions, useSavings } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -56,7 +56,7 @@ export default function TransactionForm({ onSave, editing = null, onClose, onDel
   };
 
   const getIcon = (iconName) => {
-    const Icon = LucideIcons[iconName] || LucideIcons.MoreHorizontal;
+    const Icon = getCategoryIconComponent(iconName);
     return <Icon size={18} />;
   };
 
@@ -75,11 +75,11 @@ export default function TransactionForm({ onSave, editing = null, onClose, onDel
               style={type !== t ? { color: 'var(--text-muted)' } : {}}
             >
               {type === t && (
-                <motion.span
-                  layoutId="txn-type-pill"
-                  className={`absolute inset-0 rounded-lg shadow-md ${t === 'expense' ? 'bg-red-500' : 'bg-emerald-500'}`}
-                  transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                />
+                  <motion.span
+                    layoutId="txn-type-pill"
+                    className={`absolute inset-0 rounded-lg shadow-md ${t === 'expense' ? 'bg-red-500' : 'bg-emerald-500'}`}
+                    transition={{ type: 'tween', duration: 0.16, ease: 'easeOut' }}
+                  />
               )}
               <span className="relative z-10">{t}</span>
             </button>
@@ -123,11 +123,11 @@ export default function TransactionForm({ onSave, editing = null, onClose, onDel
                   style={source !== s.value ? { color: 'var(--text-muted)' } : {}}
                 >
                   {source === s.value && (
-                    <motion.span
-                      layoutId="txn-source-pill"
-                      className={`absolute inset-0 rounded-lg shadow-md ${s.value === 'income' ? 'bg-primary-500' : 'bg-amber-500'}`}
-                      transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                    />
+                      <motion.span
+                        layoutId="txn-source-pill"
+                        className={`absolute inset-0 rounded-lg shadow-md ${s.value === 'income' ? 'bg-primary-500' : 'bg-amber-500'}`}
+                        transition={{ type: 'tween', duration: 0.16, ease: 'easeOut' }}
+                      />
                   )}
                   <span className="relative z-10">{s.label}</span>
                 </button>

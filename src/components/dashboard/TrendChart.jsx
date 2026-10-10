@@ -2,7 +2,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import { useTransactions } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useTheme } from '../../context/ThemeContext';
-import { subDays, format, parseISO, isWithinInterval } from 'date-fns';
+import { subDays, format, parseISO, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import TiltCard from '../ui/TiltCard';
 
 export default function TrendChart() {
@@ -16,9 +16,12 @@ export default function TrendChart() {
   const data = [];
 
   for (let i = days - 1; i >= 0; i--) {
-    const date = subDays(now, i);
-    const start = new Date(date.setHours(0, 0, 0, 0));
-    const end = new Date(date.setHours(23, 59, 59, 999));
+    // Fix: cache subDays result (was called twice) and use startOfDay/endOfDay
+    // instead of date.setHours() which mutates the date object in-place, causing
+    // start and end to both end up as end-of-day (data was silently wrong).
+    const day = subDays(now, i);
+    const start = startOfDay(day);
+    const end = endOfDay(day);
 
     const dayExpenses = transactions
       .filter(t => t.type === 'expense' && isWithinInterval(
@@ -27,7 +30,7 @@ export default function TrendChart() {
       ))
       .reduce((s, t) => s + t.amount, 0);
 
-    data.push({ date: format(subDays(now, i), 'MMM d'), amount: dayExpenses });
+    data.push({ date: format(day, 'MMM d'), amount: dayExpenses });
   }
 
   return (

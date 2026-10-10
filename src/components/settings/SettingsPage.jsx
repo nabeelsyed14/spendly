@@ -15,7 +15,7 @@ import ImportModal from '../import/ImportModal';
 export default function SettingsPage() {
   const { theme, toggleTheme, palette, paletteId, setPaletteId, palettes } = useTheme();
   const { currency, currencies, setCurrency, formatAmount } = useCurrency();
-  const { userName, setUserName, avatarGradient, setAvatarGradient, avatarPhoto, setAvatarPhoto } = useProfile();
+  const { userName, setUserName, avatarPhoto, setAvatarPhoto } = useProfile();
   const transactions = useTransactions();
   const categories = useCategories();
   const [showCatManager, setShowCatManager] = useState(false);
@@ -37,7 +37,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-4">
-          <h2 className="text-3xl font-extrabold tracking-tight">Settings</h2>
+      <h2 className="text-3xl font-extrabold tracking-tight">Settings</h2>
 
       <div className="space-y-2.5">
         <SettingCard icon={User} label="Your Name" color="var(--color-primary-600)"
@@ -179,8 +179,6 @@ export default function SettingsPage() {
           <AvatarPicker
             name={userName || 'Spendly'}
             currentPhoto={avatarPhoto}
-            currentGradient={avatarGradient}
-            onSelectGradient={(g) => { setAvatarGradient(g); setShowAvatarPicker(false); }}
             onSelectPhoto={(p) => { setAvatarPhoto(p); setShowAvatarPicker(false); }}
             onRemovePhoto={() => { setAvatarPhoto(null); }}
           />
@@ -204,7 +202,7 @@ function SettingCard({ icon: Icon, label, description, color, action }) {
         <p className="text-base font-semibold">{label}</p>
         {description && (
           <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            {typeof description === 'string' ? description : description}
+            {description}
           </div>
         )}
       </div>

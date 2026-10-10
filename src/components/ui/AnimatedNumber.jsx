@@ -2,12 +2,15 @@ import { useEffect, useState, useRef } from 'react';
 
 export default function AnimatedNumber({ value, formatAmount, duration = 800 }) {
   const [displayed, setDisplayed] = useState(0);
-  const ref = useRef(null);
+  const rafRef = useRef(null);
+  const fromRef = useRef(0); // tracks the last settled value to animate FROM
 
   useEffect(() => {
-    const start = performance.now();
-    const from = displayed;
+    // Capture the starting value at effect invocation time via ref, not closure,
+    // so rapid value changes always animate from the last displayed position.
+    const from = fromRef.current;
     const diff = value - from;
+    const start = performance.now();
 
     function tick(now) {
       const elapsed = now - start;
@@ -17,11 +20,15 @@ export default function AnimatedNumber({ value, formatAmount, duration = 800 }) 
       // Round mid-tween so the string length (and layout) stays stable; the
       // final frame shows the exact value with cents when present.
       setDisplayed(progress < 1 ? Math.round(next) : value);
-      if (progress < 1) ref.current = requestAnimationFrame(tick);
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        fromRef.current = value; // update anchor for the next animation
+      }
     }
 
-    ref.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(ref.current);
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
   }, [value, duration]);
 
   return <span>{formatAmount(displayed)}</span>;

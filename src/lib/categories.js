@@ -6,7 +6,7 @@ export const DEFAULT_EXPENSE_CATEGORIES = [
   { name: 'Entertainment', icon: 'Film', color: '#f59e0b', type: 'expense', budgetLimit: 0, isDefault: true },
   { name: 'Shopping', icon: 'ShoppingBag', color: '#ec4899', type: 'expense', budgetLimit: 0, isDefault: true },
   { name: 'Health', icon: 'Heart', color: '#14b8a6', type: 'expense', budgetLimit: 0, isDefault: true },
-  { name: 'Subscriptions', icon: 'CreditCard', color: '#8b5cf6', type: 'expense', budgetLimit: 0, isDefault: true },
+  { name: 'Subscriptions', icon: 'CreditCard', color: '#6366f1', type: 'expense', budgetLimit: 0, isDefault: true },
   { name: 'Education', icon: 'BookOpen', color: '#0ea5e9', type: 'expense', budgetLimit: 0, isDefault: true },
   { name: 'Gifts', icon: 'Gift', color: '#d946ef', type: 'expense', budgetLimit: 0, isDefault: true },
   { name: 'Utilities', icon: 'Zap', color: '#f97316', type: 'expense', budgetLimit: 0, isDefault: true },

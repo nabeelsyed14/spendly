@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { useSavings, useTransactions, addSavingsEntry, deleteSavingsEntry } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
-import { getSavingsBalance, getSavingsMonthStats } from '../../lib/savings';
+import { getSavingsBalance, getSavingsMonthStats, getMaxAllocatable } from '../../lib/savings';
 import AnimatedNumber from '../ui/AnimatedNumber';
 import Modal from '../ui/Modal';
 import TiltCard from '../ui/TiltCard';
@@ -141,12 +141,23 @@ function SavingsForm({ mode, onClose }) {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [date, setDate] = useState(() => format(new Date(), 'yyyy-MM-dd'));
-  const { currency } = useCurrency();
+  const [error, setError] = useState('');
+  const transactions = useTransactions();
+  const savings = useSavings();
+  const { currency, formatAmount } = useCurrency();
+  const maxAllocatable = kind === 'deposit'
+    ? getMaxAllocatable(transactions, savings, new Date(date))
+    : 0;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const value = parseFloat(amount);
     if (!value || value <= 0) return;
+    if (kind === 'deposit' && value > maxAllocatable) {
+      setError(`Only ${formatAmount(maxAllocatable)} available to allocate from remaining income.`);
+      return;
+    }
+    setError('');
     await addSavingsEntry({
       kind,
       amount: value,
@@ -171,7 +182,7 @@ function SavingsForm({ mode, onClose }) {
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => setKind(opt.value)}
+                onClick={() => { setKind(opt.value); setError(''); }}
                 className={`relative flex-1 flex items-center justify-center gap-1.5 py-3 rounded-lg text-sm font-bold transition-colors duration-200 active:scale-[0.97] ${
                   kind === opt.value ? 'text-white' : ''
                 }`}
@@ -181,7 +192,7 @@ function SavingsForm({ mode, onClose }) {
                   <motion.span
                     layoutId="savings-kind-pill"
                     className="absolute inset-0 rounded-lg shadow-md bg-primary-500"
-                    transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                    transition={{ type: 'tween', duration: 0.16, ease: 'easeOut' }}
                   />
                 )}
                 <span className="relative z-10 flex items-center gap-1.5">
@@ -203,13 +214,21 @@ function SavingsForm({ mode, onClose }) {
               step="0.01"
               min="0"
               value={amount}
-              onChange={e => setAmount(e.target.value)}
+              onChange={e => { setAmount(e.target.value); setError(''); }}
               placeholder="0.00"
               className="input w-full !pl-11 pr-3 py-3 text-lg font-bold"
               required
               autoFocus
             />
           </div>
+          {kind === 'deposit' && (
+            <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-muted)' }}>
+              Available to allocate:{' '}
+              <span className="font-bold" style={{ color: 'var(--color-primary-600)' }}>
+                {formatAmount(maxAllocatable)}
+              </span>
+            </p>
+          )}
         </div>
 
         <div className="animate-slide-up stagger-3">
@@ -232,6 +251,10 @@ function SavingsForm({ mode, onClose }) {
             className="input w-full"
           />
         </div>
+
+        {error && (
+          <p className="text-sm font-medium animate-fade-in" style={{ color: '#ef4444' }}>{error}</p>
+        )}
 
         <button type="submit" className="w-full py-3 btn-primary font-semibold animate-slide-up stagger-5">
           {kind === 'deposit' ? 'Add to Savings' : 'Withdraw'}

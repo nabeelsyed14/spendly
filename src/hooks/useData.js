@@ -2,14 +2,17 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import db from '../lib/db';
 import { ALL_DEFAULTS } from '../lib/categories';
 
-async function seedCategories() {
-  const count = await db.categories.count();
-  if (count === 0) {
-    await db.categories.bulkAdd(ALL_DEFAULTS.map(c => ({ ...c })));
-  }
+// Guard with a module-level promise so seeding only fires once per app session,
+// regardless of how many components import this module.
+let _seedPromise = null;
+function ensureCategoriesSeeded() {
+  if (_seedPromise) return _seedPromise;
+  _seedPromise = db.categories.count().then(count => {
+    if (count === 0) return db.categories.bulkAdd(ALL_DEFAULTS.map(c => ({ ...c })));
+  });
+  return _seedPromise;
 }
-
-seedCategories();
+ensureCategoriesSeeded();
 
 export function useTransactions() {
   const transactions = useLiveQuery(() => db.transactions.orderBy('date').reverse().toArray()) || [];
@@ -78,6 +81,10 @@ export async function deleteHealthGoal(id) {
 
 export async function addSavingsEntry(data) {
   return db.savings.add({ ...data, createdAt: new Date().toISOString() });
+}
+
+export async function updateSavingsEntry(id, data) {
+  return db.savings.update(id, data);
 }
 
 export async function deleteSavingsEntry(id) {

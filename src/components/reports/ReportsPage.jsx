@@ -11,6 +11,34 @@ import { tint } from '../../lib/color';
 import MonthPicker from './MonthPicker';
 import DayCalendar from './DayCalendar';
 
+// Half-width grid cells (~128px of content on a 360dp screen) can't fit
+// long letter-currency amounts at fixed sizes — tier down by string length.
+const statSize = (len) =>
+  len > 14 ? 'text-sm'
+  : len > 11 ? 'text-base'
+  : len > 8 ? 'text-lg'
+  : 'text-2xl';
+
+const cellSize = (len) =>
+  len > 14 ? 'text-xs'
+  : len > 11 ? 'text-sm'
+  : len > 8 ? 'text-base'
+  : 'text-xl';
+
+function StatCard({ icon: Icon, label, value, color = 'var(--text)', delay = 0 }) {
+  return (
+    <div className={`glass-card p-4 overflow-hidden animate-slide-up stagger-${delay}`}>
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: tint(color) }}>
+          <Icon size={14} style={{ color }} />
+        </div>
+        <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</span>
+      </div>
+      <p className={`${statSize(value.length)} font-black tabular-nums`} style={{ color }}>{value}</p>
+    </div>
+  );
+}
+
 export default function ReportsPage() {
   const transactions = useTransactions();
   const categories = useCategories();
@@ -26,32 +54,6 @@ export default function ReportsPage() {
   const report = view === 'monthly' ? monthlyReport : allTimeReport;
   const savingsBalance = getSavingsBalance(savingsEntries, transactions);
   const brand = palette.colors[600];
-
-  // Half-width grid cells (~128px of content on a 360dp screen) can't fit
-  // long letter-currency amounts at fixed sizes — tier down by string length.
-  const statSize = (len) =>
-    len > 14 ? 'text-sm'
-    : len > 11 ? 'text-base'
-    : len > 8 ? 'text-lg'
-    : 'text-2xl';
-
-  const cellSize = (len) =>
-    len > 14 ? 'text-xs'
-    : len > 11 ? 'text-sm'
-    : len > 8 ? 'text-base'
-    : 'text-xl';
-
-  const StatCard = ({ icon: Icon, label, value, color = 'var(--text)', delay = 0 }) => (
-    <div className={`glass-card p-4 overflow-hidden animate-slide-up stagger-${delay}`}>
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: tint(color) }}>
-          <Icon size={14} style={{ color }} />
-        </div>
-        <span className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'var(--text-muted)' }}>{label}</span>
-      </div>
-      <p className={`${statSize(value.length)} font-black tabular-nums`} style={{ color }}>{value}</p>
-    </div>
-  );
 
   const monthsReversed = [...allTimeReport.monthlyBreakdown].reverse();
   const visibleMonths = showAllMonths ? monthsReversed : monthsReversed.slice(0, 6);

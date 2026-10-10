@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -16,7 +17,10 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
-  return (
+  // Portaled to document.body: ancestors with transform / perspective /
+  // backdrop-filter (tilt cards, scroll reveals) would otherwise trap the
+  // fixed overlay and offset the panel with page scroll.
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -57,6 +61,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

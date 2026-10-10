@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTransactions, useCategories } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
 import { getCategoryTotals } from '../../lib/insights';
@@ -11,12 +11,14 @@ export default function CategoryChart() {
   const [hovered, setHovered] = useState(null);
   const data = getCategoryTotals(transactions, 'expense');
 
-  const getColor = (name) => {
-    const cat = categories.find(c => c.name === name);
-    return cat?.color || '#737373';
-  };
+  // Build a name→color map once per categories update instead of calling .find()
+  // on every rendered bar row.
+  const colorMap = useMemo(
+    () => Object.fromEntries(categories.map(c => [c.name, c.color])),
+    [categories]
+  );
 
-  const chartData = data.slice(0, 6).map(d => ({ ...d, color: getColor(d.name) }));
+  const chartData = data.slice(0, 6).map(d => ({ ...d, color: colorMap[d.name] || '#737373' }));
 
   if (chartData.length === 0) {
     return (

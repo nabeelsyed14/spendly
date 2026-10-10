@@ -31,18 +31,9 @@ export function getAllTimeTotals(transactions) {
 }
 
 export function getCategoryTotals(transactions, type = 'expense', date = new Date()) {
-  const monthly = getMonthlyTransactions(transactions, date).filter(t => t.type === type);
-  const totals = {};
-  monthly.forEach(t => {
-    totals[t.category] = (totals[t.category] || 0) + t.amount;
-  });
-  return Object.entries(totals)
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
-}
-
-export function getCategoryTotalsAllTime(transactions, type = 'expense') {
-  const filtered = transactions.filter(t => t.type === type);
+  // Pass date=null to aggregate all-time instead of the current month.
+  const base = date != null ? getMonthlyTransactions(transactions, date) : transactions;
+  const filtered = base.filter(t => t.type === type);
   const totals = {};
   filtered.forEach(t => {
     totals[t.category] = (totals[t.category] || 0) + t.amount;
@@ -50,6 +41,11 @@ export function getCategoryTotalsAllTime(transactions, type = 'expense') {
   return Object.entries(totals)
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value);
+}
+
+/** Thin wrapper kept for backwards compatibility. */
+export function getCategoryTotalsAllTime(transactions, type = 'expense') {
+  return getCategoryTotals(transactions, type, null);
 }
 
 export function spendingVelocity(transactions) {
@@ -117,20 +113,6 @@ export function getCategoryTrends(transactions) {
   return result;
 }
 
-export function monthlyProjection(transactions) {
-  const now = new Date();
-  const dayOfMonth = getDate(now);
-  const daysInMonth = differenceInCalendarDays(endOfMonth(now), startOfMonth(now)) + 1;
-  const monthly = getMonthlyTransactions(transactions, now);
-  const expenses = monthly.filter(t => t.type === 'expense');
-  const totalSpent = expenses.reduce((s, t) => s + t.amount, 0);
-
-  const dailyRate = dayOfMonth > 0 ? totalSpent / dayOfMonth : 0;
-  const projected = dailyRate * daysInMonth;
-
-  return { dailyRate, projected, dayOfMonth, daysInMonth };
-}
-
 export function habitPatterns(transactions) {
   const expenses = transactions.filter(t => t.type === 'expense');
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -153,6 +135,20 @@ export function habitPatterns(transactions) {
 
 export function anomalyDetection(transactions) {
   const expenses = transactions.filter(t => t.type === 'expense');
+
+  // Day-of-week seasonal factors: a weekend grocery run shouldn't flag as
+  // anomalous just because weekdays are quieter. Computed leave-one-out so a
+  // transaction can't inflate its own weekday factor and mask itself.
+  const dowTotals = [0, 0, 0, 0, 0, 0, 0];
+  const dowCounts = [0, 0, 0, 0, 0, 0, 0];
+  let totalAll = 0;
+  expenses.forEach(t => {
+    const d = typeof t.date === 'string' ? parseISO(t.date) : t.date;
+    dowTotals[getDay(d)] += t.amount;
+    dowCounts[getDay(d)] += 1;
+    totalAll += t.amount;
+  });
+
   const categoryAmounts = {};
 
   expenses.forEach(t => {
@@ -166,17 +162,29 @@ export function anomalyDetection(transactions) {
     const mean = amounts.reduce((s, a) => s + a, 0) / amounts.length;
     const variance = amounts.reduce((s, a) => s + (a - mean) ** 2, 0) / amounts.length;
     const std = Math.sqrt(variance);
+    if (std <= 0) continue;
 
     expenses
       .filter(t => t.category === cat)
       .forEach(t => {
-        if (std > 0 && (t.amount - mean) / std > 2) {
+        const d = typeof t.date === 'string' ? parseISO(t.date) : t.date;
+        const dow = getDay(d);
+        const overallExcl = (totalAll - t.amount) / Math.max(1, expenses.length - 1);
+        const cntExcl = dowCounts[dow] - 1;
+        const dowAvgExcl = cntExcl > 0 ? (dowTotals[dow] - t.amount) / cntExcl : overallExcl;
+        // Shrink noisy weekday estimates toward 1 so one heavy weekday
+        // (e.g. rent day) can't explain away a real outlier.
+        const rawFactor = overallExcl > 0 ? dowAvgExcl / overallExcl : 1;
+        const factor = Math.min(1.5, Math.max(0.5, rawFactor));
+        const expected = mean * factor;
+        const z = (t.amount - expected) / std;
+        if (z > 2) {
           anomalies.push({
             transaction: t,
             category: cat,
             amount: t.amount,
-            average: Math.round(mean),
-            deviation: Math.round(((t.amount - mean) / std) * 10) / 10,
+            average: Math.round(expected),
+            deviation: Math.round(z * 10) / 10,
           });
         }
       });
@@ -234,6 +242,14 @@ export function calculateHealthScore(healthGoals, transactions) {
 
   const avg = ratings.reduce((s, r) => s + r, 0) / ratings.length;
   return Math.round(avg * 10) / 10;
+}
+
+/** Maps a 1–10 health score to a semantic colour. Shared across GoalsPage and HealthScore. */
+export function getScoreColor(rating) {
+  if (rating >= 8) return '#22c55e';
+  if (rating >= 6) return '#f59e0b';
+  if (rating >= 4) return '#f97316';
+  return '#ef4444';
 }
 
 export function generateMonthlyReport(transactions, categories, date = new Date()) {
@@ -337,3 +353,78 @@ export function generateAllTimeReport(transactions, savings = []) {
     monthlyBreakdown,
   };
 }
+
+// --- On-device forecasting & smarter insights (zero deps) ---
+
+// Daily spend totals for elapsed days of the month (chart-ready).
+export function dailySpendSeries(transactions, date = new Date()) {
+  const dayOfMonth = getDate(date);
+  const daily = new Array(dayOfMonth).fill(0);
+  getMonthlyTransactions(transactions, date)
+    .filter(t => t.type === 'expense')
+    .forEach(t => {
+      const d = typeof t.date === 'string' ? parseISO(t.date) : t.date;
+      const day = getDate(d);
+      if (day >= 1 && day <= dayOfMonth) daily[day - 1] += t.amount;
+    });
+  return daily.map((amount, i) => ({
+    label: format(new Date(date.getFullYear(), date.getMonth(), i + 1), 'MMM d'),
+    amount,
+  }));
+}
+
+// Month-end spend projection: least-squares fit on cumulative daily spend,
+// with a residual-based confidence band. Falls back to a simple average pace
+// with under 3 elapsed days.
+export function forecastSpend(transactions, date = new Date()) {
+  const dayOfMonth = getDate(date);
+  const daysInMonth = differenceInCalendarDays(endOfMonth(date), startOfMonth(date)) + 1;
+  const daily = dailySpendSeries(transactions, date).map(p => p.amount);
+
+  const totalSoFar = daily.reduce((s, v) => s + v, 0);
+  const dailyRate = dayOfMonth > 0 ? totalSoFar / dayOfMonth : 0;
+
+  let projected = dailyRate * daysInMonth;
+  let band = projected * 0.15;
+
+  if (dayOfMonth >= 3) {
+    const xs = [];
+    const ys = [];
+    let cum = 0;
+    daily.forEach((v, i) => {
+      cum += v;
+      xs.push(i + 1);
+      ys.push(cum);
+    });
+    const n = xs.length;
+    const meanX = xs.reduce((s, v) => s + v, 0) / n;
+    const meanY = ys.reduce((s, v) => s + v, 0) / n;
+    let num = 0;
+    let den = 0;
+    xs.forEach((x, i) => {
+      num += (x - meanX) * (ys[i] - meanY);
+      den += (x - meanX) ** 2;
+    });
+    const slope = den > 0 ? num / den : dailyRate;
+    const intercept = meanY - slope * meanX;
+    // A month-end total can never be below what's already spent.
+    projected = Math.max(totalSoFar, slope * daysInMonth + intercept);
+
+    let resid = 0;
+    xs.forEach((x, i) => {
+      resid += (ys[i] - (slope * x + intercept)) ** 2;
+    });
+    const std = Math.sqrt(resid / n);
+    band = std * Math.sqrt(Math.max(0, daysInMonth - dayOfMonth)) || projected * 0.1;
+  }
+
+  return {
+    dailyRate,
+    projected: Math.round(projected),
+    lower: Math.max(Math.round(totalSoFar), Math.round(projected - band)),
+    upper: Math.round(projected + band),
+    dayOfMonth,
+    daysInMonth,
+  };
+}
+

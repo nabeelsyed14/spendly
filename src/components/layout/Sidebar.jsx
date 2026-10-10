@@ -36,7 +36,7 @@ export default function Sidebar() {
             className={({ isActive }) =>
               `group relative flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-200 active:scale-[0.97] ${
                 isActive
-                  ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400 glow-sm'
+                  ? 'bg-primary-500/15 text-primary-600 dark:text-primary-400'
                   : 'hover:bg-primary-500/5'
               }`
             }
@@ -71,19 +71,19 @@ export function MobileNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40"
-      style={{ background: 'var(--surface-solid)', borderTop: '1px solid var(--border-solid)', borderRadius: '1.25rem 1.25rem 0 0' }}
+      className="md:hidden fixed z-40 left-3 right-3 glass-strong mobile-dock"
+      style={{ bottom: 'max(1rem, env(safe-area-inset-bottom, 0px))', borderRadius: '1.75rem' }}
     >
-      <div className="flex items-center justify-around px-1 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px))]">
+      <div className="flex items-center justify-around px-2 pt-3 pb-2">
         {items.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-1 px-4 py-1.5 rounded-2xl min-w-0 transition-all duration-150 will-change-transform active:scale-95 ${
+              `flex flex-col items-center gap-1 px-4 py-2 rounded-2xl min-w-0 transition-all duration-150 will-change-transform active:scale-95 ${
                 isActive
-                  ? 'text-primary-600 dark:text-primary-400 dock-active'
+                  ? 'text-white dock-active'
                   : 'text-[var(--text-muted)] dock-inactive'
               }`
             }

@@ -26,13 +26,13 @@ export default function Header() {
       <div className="flex items-center justify-between px-5 md:px-6 py-4 md:py-5">
         <div className="flex flex-col gap-1 min-w-0">
           <span className="text-3xl md:text-[34px] font-extrabold tracking-tight leading-none">
-            Today
+            {format(now, 'EEEE')}
           </span>
           <span
             className="text-base md:text-lg font-semibold tabular-nums leading-none"
             style={{ color: 'var(--text-muted)' }}
           >
-            {format(now, 'EEE, MMM d')} · {format(now, 'HH:mm')}
+            {format(now, 'd MMM yyyy')} · {format(now, 'HH:mm')}
           </span>
         </div>
 

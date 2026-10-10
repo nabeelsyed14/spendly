@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react';
 import { Camera, X } from 'lucide-react';
-import Avatar, { GRADIENTS } from './Avatar';
+import Avatar from './Avatar';
 
-export default function AvatarPicker({ name = 'User', currentPhoto, currentGradient, onSelectGradient, onSelectPhoto, onRemovePhoto }) {
+export default function AvatarPicker({ name = 'User', currentPhoto, onSelectPhoto, onRemovePhoto }) {
   const [preview, setPreview] = useState(currentPhoto);
   const fileRef = useRef(null);
 
@@ -45,25 +45,6 @@ export default function AvatarPicker({ name = 'User', currentPhoto, currentGradi
             </button>
           )}
           <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-        </div>
-      </div>
-
-      <div className="animate-slide-up stagger-2">
-        <p className="text-sm font-medium mb-2" style={{ color: 'var(--text-muted)' }}>Or pick a gradient</p>
-        <div className="grid grid-cols-6 gap-2">
-          {GRADIENTS.map(([c1, c2], i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => { onSelectGradient(`${c1},${c2}`); setPreview(null); }}
-              className="animate-scale-in w-full aspect-square rounded-xl transition-all duration-200 hover:scale-110 active:scale-95 border-2"
-              style={{
-                background: `linear-gradient(135deg, ${c1}, ${c2})`,
-                borderColor: currentGradient === `${c1},${c2}` ? 'var(--text)' : 'transparent',
-                boxShadow: currentGradient === `${c1},${c2}` ? `0 0 12px ${c1}40` : 'none',
-              }}
-            />
-          ))}
         </div>
       </div>
     </div>

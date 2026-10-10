@@ -48,7 +48,7 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     applyPalette(palette);
     localStorage.setItem('spendly-palette', paletteId);
-  }, [paletteId, palette]);
+  }, [paletteId]); // palette is derived from paletteId — listing both would double-fire
 
   const toggleTheme = () => setTheme(t => t === 'light' ? 'dark' : 'light');
 

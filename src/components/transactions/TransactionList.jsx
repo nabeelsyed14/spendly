@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 import { Pencil, Trash2, Search, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
-import * as LucideIcons from 'lucide-react';
+import { getCategoryIconComponent } from '../../lib/icons';
 import TransactionForm from './TransactionForm';
 import { useTransactions, useCategories, addTransaction, updateTransaction, deleteTransaction } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -15,6 +15,11 @@ export default function TransactionList() {
   const [editing, setEditing] = useState(null);
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
+
+  const catMap = useMemo(
+    () => new Map(categories.map(c => [c.name, c])),
+    [categories]
+  );
 
   const filtered = transactions.filter(t => {
     const matchSearch = !search ||
@@ -33,13 +38,12 @@ export default function TransactionList() {
   });
 
   const getCategoryColor = (catName) => {
-    const cat = categories.find(c => c.name === catName);
-    return cat?.color || '#737373';
+    return catMap.get(catName)?.color || '#737373';
   };
 
   const getCategoryIcon = (catName) => {
-    const cat = categories.find(c => c.name === catName);
-    const Icon = LucideIcons[cat?.icon] || LucideIcons.MoreHorizontal;
+    const cat = catMap.get(catName);
+    const Icon = getCategoryIconComponent(cat?.icon);
     return <Icon size={18} />;
   };
 
@@ -131,6 +135,7 @@ export default function TransactionList() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.18, delay: Math.min(rowIdx * 0.03, 0.25) }}
                     whileHover={{ y: -2, transition: { duration: 0.15 } }}
+                    whileTap={{ scale: 0.98, transition: { duration: 0.1 } }}
                   >
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-110"

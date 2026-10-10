@@ -1,8 +1,19 @@
-import { TrendingUp, TrendingDown, Minus, AlertTriangle, Target, Clock, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, AlertTriangle, Clock, BarChart3, LineChart } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { useTransactions } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
-import { spendingVelocity, getCategoryTrends, monthlyProjection, habitPatterns, anomalyDetection } from '../../lib/insights';
+import { useTheme } from '../../context/ThemeContext';
+import { spendingVelocity, getCategoryTrends, habitPatterns, anomalyDetection, forecastSpend, dailySpendSeries } from '../../lib/insights';
 import { tint } from '../../lib/color';
+
+const chartTooltip = {
+  background: 'var(--surface-solid)',
+  border: '1px solid var(--border-solid)',
+  borderRadius: 16,
+  fontSize: 12,
+  padding: '8px 12px',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+};
 
 function InsightCard({ icon: Icon, title, children, color = 'var(--text)', className = '' }) {
   return (
@@ -18,8 +29,7 @@ function InsightCard({ icon: Icon, title, children, color = 'var(--text)', class
   );
 }
 
-function VelocityInsight() {
-  const transactions = useTransactions();
+function VelocityInsight({ transactions }) {
   const { formatAmount } = useCurrency();
   const { current, changePercent, trend } = spendingVelocity(transactions);
 
@@ -43,68 +53,57 @@ function VelocityInsight() {
   );
 }
 
-function ProjectionInsight() {
-  const transactions = useTransactions();
+function HabitInsight({ transactions }) {
   const { formatAmount } = useCurrency();
-  const { projected, dayOfMonth, daysInMonth, dailyRate } = monthlyProjection(transactions);
-  const progress = (dayOfMonth / daysInMonth) * 100;
-
-  return (
-    <InsightCard icon={Target} title="Monthly Projection" color="var(--color-primary-600)" className="stagger-2">
-      <p className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>
-        Day {dayOfMonth} of {daysInMonth} — {Math.round(progress)}% through the month
-      </p>
-      <div className="w-full h-2 rounded-full mb-3" style={{ background: 'var(--input-bg)' }}>
-        <div className="h-full rounded-full bar-animate bg-primary-500" style={{ width: `${progress}%` }} />
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="p-2.5 rounded-xl" style={{ background: 'var(--input-bg)' }}>
-          <p className="text-sm uppercase tracking-wider font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>Daily Rate</p>
-          <p className="text-lg font-extrabold">{formatAmount(dailyRate)}</p>
-        </div>
-        <div className="p-2.5 rounded-xl" style={{ background: 'var(--input-bg)' }}>
-          <p className="text-sm uppercase tracking-wider font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>Projected</p>
-          <p className="text-lg font-extrabold">{formatAmount(projected)}</p>
-        </div>
-      </div>
-    </InsightCard>
-  );
-}
-
-function HabitInsight() {
-  const transactions = useTransactions();
-  const { byDay, dayNames, peakDay, peakHalf } = habitPatterns(transactions);
+  const { byDay, dayNames, peakDay } = habitPatterns(transactions);
   const maxVal = Math.max(...byDay, 1);
+  const total = byDay.reduce((s, v) => s + v, 0);
+  const peakIdx = byDay.indexOf(Math.max(...byDay));
 
   return (
     <InsightCard icon={Clock} title="Habit Patterns" color="var(--color-primary-600)" className="stagger-3">
-      <div className="flex items-end gap-1 h-16 mb-3">
+      <div className="flex items-end gap-1 h-24 mb-3">
         {byDay.map((val, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-1">
+          <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1 h-full">
+            <span
+              className="text-[9px] font-bold tabular-nums"
+              style={{ color: i === peakIdx && val > 0 ? 'var(--color-primary-600)' : 'var(--text-muted)' }}
+            >
+              {val > 0 ? formatAmount(val, { compact: true }) : ''}
+            </span>
             <div
-              className="w-full rounded-t bar-animate bg-primary-500/60"
-              style={{ height: `${(val / maxVal) * 100}%`, minHeight: val > 0 ? 3 : 0, animationDelay: `${i * 0.05}s` }}
+              className="w-full rounded-t bar-animate"
+              style={{
+                height: `${(val / maxVal) * 100}%`,
+                minHeight: val > 0 ? 3 : 0,
+                animationDelay: `${i * 0.05}s`,
+                background: 'var(--color-primary-600)',
+                opacity: i === peakIdx && val > 0 ? 1 : 0.55,
+              }}
             />
             <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>{dayNames[i]}</span>
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
+        <div className="p-2.5 rounded-xl" style={{ background: 'var(--input-bg)' }}>
+          <p className="text-sm uppercase tracking-wider font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>Total</p>
+          <p className="text-sm font-bold tabular-nums">{formatAmount(total, { compact: true })}</p>
+        </div>
+        <div className="p-2.5 rounded-xl" style={{ background: 'var(--input-bg)' }}>
+          <p className="text-sm uppercase tracking-wider font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>Daily Avg</p>
+          <p className="text-sm font-bold tabular-nums">{formatAmount(total / 7, { compact: true })}</p>
+        </div>
         <div className="p-2.5 rounded-xl" style={{ background: 'var(--input-bg)' }}>
           <p className="text-sm uppercase tracking-wider font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>Peak Day</p>
           <p className="text-sm font-semibold">{peakDay}</p>
-        </div>
-        <div className="p-2.5 rounded-xl" style={{ background: 'var(--input-bg)' }}>
-          <p className="text-sm uppercase tracking-wider font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>Heavier Spending</p>
-          <p className="text-sm font-semibold capitalize">{peakHalf}</p>
         </div>
       </div>
     </InsightCard>
   );
 }
 
-function AnomalyInsight() {
-  const transactions = useTransactions();
+function AnomalyInsight({ transactions }) {
   const { formatAmount } = useCurrency();
   const anomalies = anomalyDetection(transactions);
 
@@ -137,8 +136,7 @@ function AnomalyInsight() {
   );
 }
 
-function TrendInsight() {
-  const transactions = useTransactions();
+function TrendInsight({ transactions }) {
   const trends = getCategoryTrends(transactions);
   const entries = Object.entries(trends).filter(([, v]) => v.increasing);
 
@@ -178,16 +176,105 @@ function TrendInsight() {
   );
 }
 
+function ForecastInsight({ transactions }) {
+  const { formatAmount } = useCurrency();
+  const { palette } = useTheme();
+  const brand = palette.colors[600];
+  const { projected, lower, upper, dayOfMonth, daysInMonth, dailyRate } = forecastSpend(transactions);
+  const daily = dailySpendSeries(transactions);
+
+  // Cumulative actuals + projected continuation that lands on the forecast
+  // total at month end — reads as one trajectory, not noisy daily spikes.
+  let cum = 0;
+  const elapsed = [];
+  for (let d = 1; d <= dayOfMonth; d++) {
+    cum += daily[d - 1]?.amount ?? 0;
+    elapsed.push(cum);
+  }
+  const remaining = Math.max(0, daysInMonth - dayOfMonth);
+  const step = remaining > 0 ? Math.max(0, (projected - cum) / remaining) : 0;
+
+  const data = [];
+  let tail = cum;
+  for (let d = 1; d <= daysInMonth; d++) {
+    if (d < dayOfMonth) {
+      data.push({ label: String(d), actual: elapsed[d - 1], forecast: null });
+    } else if (d === dayOfMonth) {
+      data.push({ label: String(d), actual: elapsed[d - 1], forecast: elapsed[d - 1] });
+    } else {
+      tail += step;
+      data.push({ label: String(d), actual: null, forecast: Math.round(tail) });
+    }
+  }
+
+  return (
+    <InsightCard icon={LineChart} title="Month Forecast" color={brand} className="stagger-1">
+      <div className="flex items-baseline gap-2 mb-1">
+        <span className="text-3xl font-extrabold tabular-nums">{formatAmount(projected)}</span>
+        <span className="text-sm" style={{ color: 'var(--text-muted)' }}>projected total</span>
+      </div>
+      <p className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>
+        Likely range {formatAmount(lower)} – {formatAmount(upper)}
+      </p>
+      <p className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>
+        Day {dayOfMonth} of {daysInMonth} — {Math.round((dayOfMonth / daysInMonth) * 100)}% through the month
+      </p>
+      <div className="w-full h-2 rounded-full mb-3" style={{ background: 'var(--input-bg)' }}>
+        <div className="h-full rounded-full bar-animate bg-primary-500" style={{ width: `${(dayOfMonth / daysInMonth) * 100}%` }} />
+      </div>
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        <div className="p-2.5 rounded-xl" style={{ background: 'var(--input-bg)' }}>
+          <p className="text-sm uppercase tracking-wider font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>Daily Rate</p>
+          <p className="text-lg font-extrabold tabular-nums">{formatAmount(dailyRate)}</p>
+        </div>
+        <div className="p-2.5 rounded-xl" style={{ background: 'var(--input-bg)' }}>
+          <p className="text-sm uppercase tracking-wider font-medium mb-0.5" style={{ color: 'var(--text-muted)' }}>Spent So Far</p>
+          <p className="text-lg font-extrabold tabular-nums">{formatAmount(cum)}</p>
+        </div>
+      </div>
+      <div className="h-44">
+        <ResponsiveContainer>
+          <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+            <defs>
+              <linearGradient id="forecastGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={brand} stopOpacity={0.2} />
+                <stop offset="95%" stopColor={brand} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <XAxis dataKey="label" tick={{ fontSize: 9, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} interval={Math.ceil(daysInMonth / 6)} />
+            <YAxis tick={{ fontSize: 9, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={40} tickFormatter={(v) => formatAmount(v, { compact: true })} />
+            <Tooltip
+              formatter={(v, name) => [formatAmount(v), name === 'actual' ? 'Spent' : 'Projected']}
+              contentStyle={chartTooltip}
+            />
+            <ReferenceLine
+              x={String(dayOfMonth)}
+              stroke="var(--text-muted)"
+              strokeDasharray="3 3"
+              strokeOpacity={0.6}
+              label={{ value: 'Today', position: 'insideTopRight', fontSize: 9, fill: 'var(--text-muted)' }}
+            />
+            <Area type="monotone" dataKey="actual" stroke={brand} strokeWidth={2} fill="url(#forecastGrad)" connectNulls animationDuration={1200} />
+            <Area type="monotone" dataKey="forecast" stroke={brand} strokeWidth={2} strokeDasharray="5 5" fill="none" connectNulls animationDuration={1200} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </InsightCard>
+  );
+}
+
 export default function InsightsPage() {
+  const transactions = useTransactions();
+
   return (
     <div className="space-y-3">
       <h2 className="text-3xl font-extrabold tracking-tight">Insights</h2>
 
-      <VelocityInsight />
-      <ProjectionInsight />
-      <HabitInsight />
-      <TrendInsight />
-      <AnomalyInsight />
+      <ForecastInsight transactions={transactions} />
+      <VelocityInsight transactions={transactions} />
+      <HabitInsight transactions={transactions} />
+      <TrendInsight transactions={transactions} />
+      <AnomalyInsight transactions={transactions} />
     </div>
   );
 }
