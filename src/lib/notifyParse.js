@@ -75,6 +75,8 @@ const promoPattern = /\b(cashback offer|discount|coupon|apply now|limited time|s
 const referencePattern = /(?:UPI\s*Ref|Ref\s*(?:no|number)?|RRN|UTR)\s*[:#.-]?\s*([A-Z0-9]{8,})/i;
 const accountPattern = /(?:A\/c|Acct|Account|Card)\s*(?:no\.?\s*)?(?:[Xx*·-]+)?\s*(\d{3,4})\b/i;
 const merchantPatterns = [
+  /\b([A-Z][A-Z0-9&._@ -]+?)\s+paid\s+(?:you|to\s+you)\b/i,
+  /\byou\s+paid\s+([A-Z][A-Z0-9&._@-]+?)(?=\s+(?:via\b|on\b|Rs\.?|INR|₹|AED|USD|EUR)|[.;()]|$)/i,
   /\b(?:to\s+VPA|trf\s+to|paid\s+to)\s+([A-Z0-9._@ -]+?)(?=\s*\(|\s+Ref|\s+on\s+\d|[.;]|$)/i,
   /\btowards\s+(?:VPA\s+)?([A-Z0-9._@ -]+?)(?=\s*\(|\s+Ref|\s+on\s+\d|[.;]|$)/i,
   /\bVPA\s+([A-Z0-9._@-]+)/i,
@@ -113,6 +115,9 @@ export function categoryFor(merchant, body = '', direction = 'debit') {
 }
 
 function transactionDirection(body) {
+  // Recipient-is-user phrasing wins over the bare keyword: "X paid you" is
+  // money in, even though it contains "paid".
+  if (/\bpaid\s+(you|to\s+you)\b/i.test(body)) return 'credit';
   const debit = debitPattern.test(body);
   const credit = creditPattern.test(body);
   if (debit === credit) return null;

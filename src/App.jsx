@@ -9,6 +9,7 @@ import { ProfileProvider } from './context/ProfileContext';
 import Sidebar, { MobileNav } from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import CurrencyPicker from './components/ui/CurrencyPicker';
+import Onboarding from './components/onboarding/Onboarding';
 import BalanceCard from './components/dashboard/BalanceCard';
 import SavingsCard from './components/dashboard/SavingsCard';
 import CategoryChart from './components/dashboard/CategoryChart';
@@ -90,6 +91,7 @@ export default function App() {
               </div>
 
               <CurrencyPicker />
+              <Onboarding />
 
               <PageWrapper>
                 <AnimatedRoutes>
