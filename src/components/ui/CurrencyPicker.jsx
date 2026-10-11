@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Check, Search } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 
-const CURRENCY_FLAGS = {
+export const CURRENCY_FLAGS = {
   USD: '🇺🇸', EUR: '🇪🇺', GBP: '🇬🇧', INR: '🇮🇳', JPY: '🇯🇵',
   CAD: '🇨🇦', AUD: '🇦🇺', BRL: '🇧🇷', PKR: '🇵🇰', AED: '🇦🇪',
   SAR: '🇸🇦', CNY: '🇨🇳', KRW: '🇰🇷', SGD: '🇸🇬', CHF: '🇨🇭',

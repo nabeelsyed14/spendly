@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { format } from 'date-fns';
-import { Inbox, ScanLine, ClipboardPaste } from 'lucide-react';
+import { Inbox, ScanLine, ClipboardPaste, Trash2 } from 'lucide-react';
 import db from '../../lib/db';
+import ConfirmDialog from '../ui/ConfirmDialog';
 import CategoryPicker from '../ui/CategoryPicker';
 import { useTransactions, useCategories, addTransaction } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -27,6 +28,7 @@ export default function ReviewPage() {
   const all = useLiveQuery(() => db.pendingSpends.orderBy('detectedAt').reverse().toArray()) || [];
 
   const [tab, setTab] = useState('pending');
+  const [visibleCount, setVisibleCount] = useState(30);
   const [cats, setCats] = useState({});
   const [merchants, setMerchants] = useState({});
   const [sources, setSources] = useState({});
@@ -34,6 +36,7 @@ export default function ReviewPage() {
   const [pasteError, setPasteError] = useState('');
   const [scanMsg, setScanMsg] = useState('');
   const [scanning, setScanning] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const autoScanned = useRef(false);
 
   const counts = {
@@ -42,6 +45,7 @@ export default function ReviewPage() {
     discarded: all.filter((r) => r.status === 'discarded').length,
   };
   const rows = all.filter((r) => r.status === tab);
+  const visibleRows = rows.slice(0, visibleCount);
 
   const runScan = async (silent) => {
     if (!isNativeSmsSupported() || !isTrackingEnabled()) return;
@@ -69,7 +73,10 @@ export default function ReviewPage() {
   useEffect(() => {
     if (autoScanned.current) return;
     autoScanned.current = true;
-    runScan(true);
+    // Let the route-enter transition land first: scanning writes rows and
+    // flips status text mid-animation, which reads as a glitch.
+    const t = setTimeout(() => runScan(true), 400);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -148,7 +155,28 @@ export default function ReviewPage() {
 
   return (
     <div className="space-y-3">
-      <h2 className="text-3xl font-extrabold tracking-tight">Review</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-3xl font-extrabold tracking-tight">Review</h2>
+        {counts.pending > 0 && (
+          <button
+            onClick={() => setShowClearConfirm(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all duration-200 hover:bg-red-500/5 text-red-500 active:scale-95 flex-shrink-0"
+            style={{ borderColor: 'var(--border-solid)' }}
+          >
+            <Trash2 size={13} />
+            Clear all
+          </button>
+        )}
+      </div>
+      <ConfirmDialog
+        isOpen={showClearConfirm}
+        onClose={() => setShowClearConfirm(false)}
+        title="Clear review inbox"
+        message={`Discard all ${counts.pending} pending items? You can restore them from Discarded.`}
+        confirmLabel="Discard all"
+        danger
+        onConfirm={() => db.pendingSpends.where('status').equals('pending').modify({ status: 'discarded' })}
+      />
       <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
         The original message beside what we understood — you have the last word.
       </p>
@@ -192,7 +220,7 @@ export default function ReviewPage() {
         {TABS.map((t) => (
           <button
             key={t.key}
-            onClick={() => setTab(t.key)}
+            onClick={() => { setTab(t.key); setVisibleCount(30); }}
             className={`flex-1 px-2 py-2 rounded-xl text-xs font-bold transition-all duration-150 active:scale-95 ${
               tab === t.key ? 'bg-primary-500 text-white' : ''
             }`}
@@ -211,10 +239,9 @@ export default function ReviewPage() {
         </div>
       ) : tab === 'pending' ? (
         <div className="space-y-3">
-          {rows.map((row, i) => (
+          {visibleRows.map((row) => (
             <SlipRow
               key={row.id}
-              index={i}
               row={row}
               categories={categories}
               formatAmount={formatAmount}
@@ -229,10 +256,19 @@ export default function ReviewPage() {
               onDiscard={() => discard(row)}
             />
           ))}
+          {rows.length > visibleCount && (
+            <button
+              onClick={() => setVisibleCount((n) => n + 30)}
+              className="w-full p-2.5 rounded-2xl border text-xs font-bold transition-all duration-200 hover:bg-primary-500/5 active:scale-95"
+              style={{ borderColor: 'var(--border-solid)', color: 'var(--text-muted)' }}
+            >
+              Show more ({rows.length - visibleCount} remaining)
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-1.5">
-          {rows.map((row) => {
+          {visibleRows.map((row) => {
             const isIncome = row.type === 'income';
             return (
               <div key={row.id} className="flex items-center gap-2.5 p-3 rounded-2xl" style={{ background: 'var(--input-bg)' }}>
@@ -259,21 +295,27 @@ export default function ReviewPage() {
               </div>
             );
           })}
+          {rows.length > visibleCount && (
+            <button
+              onClick={() => setVisibleCount((n) => n + 30)}
+              className="w-full p-2.5 rounded-2xl border text-xs font-bold transition-all duration-200 hover:bg-primary-500/5 active:scale-95"
+              style={{ borderColor: 'var(--border-solid)', color: 'var(--text-muted)' }}
+            >
+              Show more ({rows.length - visibleCount} remaining)
+            </button>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function SlipRow({ row, index, categories, formatAmount, dup, merchant, onMerchant, catValue, onCategory, source, onSource, onApprove, onDiscard }) {
+function SlipRow({ row, categories, formatAmount, dup, merchant, onMerchant, catValue, onCategory, source, onSource, onApprove, onDiscard }) {
   const isIncome = row.type === 'income';
   const pool = categories.filter((c) => c.type === row.type);
 
   return (
-    <div
-      className="glass-card overflow-hidden animate-slide-up"
-      style={{ animationDelay: `${Math.min(index * 0.05, 0.3)}s` }}
-    >
+    <div className="glass-card overflow-hidden">
       {/* SMS slip */}
       <div className="p-3.5">
         <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>

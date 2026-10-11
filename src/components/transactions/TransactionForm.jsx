@@ -198,7 +198,7 @@ export default function TransactionForm({ onSave, editing = null, onClose, onDel
         </div>
 
         {error && (
-          <p className="text-sm font-semibold text-red-500 -mt-1 animate-fade-in">{error}</p>
+          <p key={error} className="text-sm font-semibold text-red-500 -mt-1 animate-shake">{error}</p>
         )}
 
         <div className="flex gap-2">

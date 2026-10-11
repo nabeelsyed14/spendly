@@ -10,6 +10,10 @@ export default function AnimatedNumber({ value, formatAmount, duration = 800 }) 
     // so rapid value changes always animate from the last displayed position.
     const from = fromRef.current;
     const diff = value - from;
+    if (diff === 0) {
+      setDisplayed(value);
+      return;
+    }
     const start = performance.now();
 
     function tick(now) {
@@ -31,5 +35,5 @@ export default function AnimatedNumber({ value, formatAmount, duration = 800 }) 
     return () => cancelAnimationFrame(rafRef.current);
   }, [value, duration]);
 
-  return <span>{formatAmount(displayed)}</span>;
+  return <span className="tabular-nums">{formatAmount(displayed)}</span>;
 }

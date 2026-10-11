@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, PiggyBank, Wallet } from 'lucide-react';
 import { useTransactions, useSavings } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -8,6 +9,7 @@ import { getSavingsBalance, getSavingsMonthStats } from '../../lib/savings';
 import Avatar from '../ui/Avatar';
 import AnimatedNumber from '../ui/AnimatedNumber';
 import TiltCard from '../ui/TiltCard';
+import { useReducedMotion, withReduced, variants } from '../../animations';
 
 export default function BalanceCard() {
   const transactions = useTransactions();
@@ -21,6 +23,8 @@ export default function BalanceCard() {
   const wallet = income - expense - allocated + withdrawn;
 
   const greeting = userName ? `${getGreeting()}, ${userName}` : getGreeting();
+  const reduced = useReducedMotion();
+  const fadeUp = withReduced(variants.fadeUp, reduced);
 
   // Tier the hero font by final string length so long letter-currency
   // amounts (e.g. "AED 6,529,112") never overflow the card on narrow screens.
@@ -44,12 +48,22 @@ export default function BalanceCard() {
       <div className="absolute top-1/2 right-1/4 w-24 h-24 rounded-full bg-white/5" />
 
       <div className="relative z-10 depth">
-        <div className="flex items-center gap-3 mb-5 animate-slide-up">
+        <motion.div
+          initial={fadeUp.initial}
+          animate={fadeUp.animate}
+          transition={{ ...fadeUp.transition }}
+          className="flex items-center gap-3 mb-5"
+        >
           <Avatar name={userName || 'User'} photo={avatarPhoto} size={40} />
           <span className="text-base font-semibold text-white/85">{greeting}</span>
-        </div>
+        </motion.div>
 
-        <div className="flex items-center justify-between gap-2 mb-1.5 animate-slide-up stagger-1">
+        <motion.div
+          initial={fadeUp.initial}
+          animate={fadeUp.animate}
+          transition={{ ...fadeUp.transition, delay: 0.1 }}
+          className="flex items-center justify-between gap-2 mb-1.5"
+        >
           <div className="flex items-center gap-2">
             <p className="text-[11px] text-white/50 uppercase tracking-wider font-semibold">Total Balance</p>
             <span className="tag" style={{ background: 'rgba(255,255,255,0.18)', color: '#fff' }}>
@@ -62,13 +76,23 @@ export default function BalanceCard() {
           >
             {balance >= 0 ? '+' : ''}{formatAmount(balance)} this month
           </span>
-        </div>
+        </motion.div>
 
-        <p className={`${heroSize} font-extrabold mb-6 tracking-tight animate-slide-up stagger-2`}>
+        <motion.p
+          initial={fadeUp.initial}
+          animate={fadeUp.animate}
+          transition={{ ...fadeUp.transition, delay: 0.2 }}
+          className={`${heroSize} font-extrabold mb-6 tracking-tight tabular-nums min-h-[1.2em]`}
+        >
           <AnimatedNumber value={netSavings} formatAmount={formatAmount} />
-        </p>
+        </motion.p>
 
-        <div className="grid grid-cols-2 gap-2.5 animate-slide-up stagger-3">
+        <motion.div
+          initial={fadeUp.initial}
+          animate={fadeUp.animate}
+          transition={{ ...fadeUp.transition, delay: 0.3 }}
+          className="grid grid-cols-2 gap-2.5"
+        >
           <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/10">
             <div className="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center">
               <TrendingUp size={17} className="text-emerald-300" />
@@ -105,7 +129,7 @@ export default function BalanceCard() {
               <p className="text-sm font-bold tabular-nums">{formatAmount(savingsBalance)}</p>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </TiltCard>
   );

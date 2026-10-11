@@ -12,7 +12,7 @@ export default function CategoryPicker({ value, categories, onChange }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="input w-full text-xs cursor-pointer flex items-center gap-2 text-left"
+        className="input w-full text-xs cursor-pointer flex items-center gap-2 text-left transition-all duration-150 active:scale-[0.99]"
         style={{ borderColor: 'transparent', background: 'transparent' }}
       >
         <span

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Download, Upload, Tag, Moon, Sun, Globe, User, Trash2, Palette, BellRing } from 'lucide-react';
-import { Capacitor } from '@capacitor/core';
+import { Download, Upload, Tag, Moon, Sun, Globe, User, Trash2, Palette, BellRing, Search, Check, ChevronDown } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useTheme } from '../../context/ThemeContext';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -15,19 +14,21 @@ import {
 import { tint } from '../../lib/color';
 import db from '../../lib/db';
 import Modal from '../ui/Modal';
+import { CURRENCY_FLAGS } from '../ui/CurrencyPicker';
 import Avatar from '../ui/Avatar';
 import AvatarPicker from '../ui/AvatarPicker';
 import ImportModal from '../import/ImportModal';
 
 export default function SettingsPage() {
   const { theme, toggleTheme, palette, paletteId, setPaletteId, palettes } = useTheme();
-  const { currency, currencies, setCurrency, formatAmount } = useCurrency();
+  const { currency, setCurrency, formatAmount } = useCurrency();
   const { userName, setUserName, avatarPhoto, setAvatarPhoto } = useProfile();
   const transactions = useTransactions();
   const categories = useCategories();
   const [showCatManager, setShowCatManager] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showCurrency, setShowCurrency] = useState(false);
 
   const handleExport = async () => {
     if (!transactions.length) {
@@ -124,15 +125,15 @@ export default function SettingsPage() {
           }
           color="var(--color-primary-600)"
           action={
-            <select
-              value={currency.code}
-              onChange={e => setCurrency(e.target.value)}
-              className="input text-sm cursor-pointer"
+            <button
+              onClick={() => setShowCurrency(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold border transition-all duration-200 hover:bg-primary-500/5 active:scale-95"
+              style={{ borderColor: 'var(--border-solid)' }}
             >
-              {currencies.map(c => (
-                <option key={c.code} value={c.code}>{c.code}</option>
-              ))}
-            </select>
+              <span className="leading-none">{CURRENCY_FLAGS[currency.code] || '💱'}</span>
+              {currency.code}
+              <ChevronDown size={14} style={{ color: 'var(--text-muted)' }} />
+            </button>
           }
         />
 
@@ -181,6 +182,14 @@ export default function SettingsPage() {
 
       {showImport && (
         <ImportModal isOpen={true} onClose={() => setShowImport(false)} categories={categories} />
+      )}
+
+      {showCurrency && (
+        <CurrencySheet
+          current={currency.code}
+          onPick={(code) => { setCurrency(code); setShowCurrency(false); }}
+          onClose={() => setShowCurrency(false)}
+        />
       )}
 
       {showAvatarPicker && (
@@ -376,6 +385,53 @@ function SmsTrackingCard() {
         </div>
       )}
     </>
+  );
+}
+
+function CurrencySheet({ current, onPick, onClose }) {
+  const { currencies } = useCurrency();
+  const [query, setQuery] = useState('');
+  const filtered = currencies.filter(c =>
+    c.code.toLowerCase().includes(query.toLowerCase()) ||
+    c.name.toLowerCase().includes(query.toLowerCase())
+  );
+
+  return (
+    <Modal isOpen={true} onClose={onClose} title="Choose currency" maxWidth="max-w-xs">
+      <div className="relative mb-3">
+        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+        <input
+          type="text"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="Search currencies…"
+          className="input w-full !pl-9 text-sm"
+        />
+      </div>
+      <div className="max-h-[50vh] overflow-y-auto space-y-1 pr-0.5">
+        {filtered.map(c => (
+          <button
+            key={c.code}
+            onClick={() => onPick(c.code)}
+            className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-sm font-semibold transition-all duration-150 hover:bg-primary-500/5 active:scale-95"
+          >
+            <span className="text-lg leading-none flex-shrink-0">{CURRENCY_FLAGS[c.code] || '💱'}</span>
+            <span className="flex-1 min-w-0 text-left">
+              <span className="block font-bold">{c.code}</span>
+              <span className="block text-[11px] truncate font-medium" style={{ color: 'var(--text-muted)' }}>{c.name}</span>
+            </span>
+            {c.code === current && (
+              <Check size={15} style={{ color: 'var(--color-primary-600)' }} className="flex-shrink-0" />
+            )}
+          </button>
+        ))}
+        {filtered.length === 0 && (
+          <p className="text-center py-6 text-sm" style={{ color: 'var(--text-muted)' }}>
+            No currencies found
+          </p>
+        )}
+      </div>
+    </Modal>
   );
 }
 

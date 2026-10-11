@@ -4,6 +4,7 @@ import { Capacitor } from '@capacitor/core'
 import './index.css'
 import App from './App.jsx'
 import { drainOnLaunch } from './lib/notifyCapture'
+import { waitForInitialData } from './hooks/useData'
 
 // Silent best-effort SMS drain: only runs when tracking is on and permission
 // was already granted (never prompts on launch).
@@ -31,8 +32,52 @@ if (Capacitor.isNativePlatform()) {
     .catch(() => {})
 }
 
+// Seamless launch handoff: React wipes #root the instant it mounts.
+// Clone the solid boot splash onto <body> as an opaque veil so the initial
+// font load, theme/palette CSS vars, and IndexedDB hydration happen completely
+// hidden from view, then cross-fade smoothly into the rock-solid dashboard.
+const bootEl = document.querySelector('#root .boot');
+let hideOverlay = () => {};
+
+if (bootEl) {
+  const overlay = bootEl.cloneNode(true);
+  overlay.id = 'boot-overlay';
+  overlay.style.transition = 'opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+  overlay.style.pointerEvents = 'none';
+  overlay.style.zIndex = '99999';
+  document.body.appendChild(overlay);
+
+  let done = false;
+  hideOverlay = () => {
+    if (done) return;
+    done = true;
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 320);
+  };
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
   </StrictMode>,
-)
+);
+
+if (bootEl) {
+  const bootStart = Date.now();
+  const MIN_SPLASH_MS = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 350;
+  const MAX_SPLASH_MS = 2000;
+
+  const fontPromise = document.fonts?.ready ? document.fonts.ready : Promise.resolve();
+  const dataPromise = waitForInitialData().catch(() => {});
+
+  const readyPromise = Promise.all([fontPromise, dataPromise]);
+  const timeoutPromise = new Promise((resolve) => setTimeout(resolve, MAX_SPLASH_MS));
+
+  Promise.race([readyPromise, timeoutPromise]).then(() => {
+    const elapsed = Date.now() - bootStart;
+    const delay = Math.max(0, MIN_SPLASH_MS - elapsed);
+    setTimeout(() => {
+      requestAnimationFrame(() => hideOverlay());
+    }, delay);
+  });
+}

@@ -14,6 +14,16 @@ function ensureCategoriesSeeded() {
 }
 ensureCategoriesSeeded();
 
+/** Resolves when IndexedDB is open and ready with initial defaults */
+export async function waitForInitialData() {
+  await ensureCategoriesSeeded();
+  await db.open();
+  await Promise.all([
+    db.transactions.limit(1).toArray(),
+    db.categories.limit(1).toArray(),
+  ]);
+}
+
 export function useTransactions() {
   const transactions = useLiveQuery(() => db.transactions.orderBy('date').reverse().toArray()) || [];
   return transactions;

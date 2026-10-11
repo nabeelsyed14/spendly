@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { LayoutDashboard, ArrowLeftRight, Lightbulb, Target, FileText, Settings, Inbox } from 'lucide-react';
 import { useProfile } from '../../context/ProfileContext';
@@ -67,7 +68,11 @@ export default function Sidebar() {
             {({ isActive }) => (
               <>
                 {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-primary-500" />
+                  <motion.div
+                    layoutId="sidebar-indicator"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-primary-500"
+                    transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+                  />
                 )}
                 <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
                 {label}
@@ -110,13 +115,26 @@ export function MobileNav() {
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-1 px-4 py-2 rounded-2xl min-w-0 transition-all duration-150 will-change-transform active:scale-95 ${
+              `relative flex flex-col items-center gap-1 px-4 py-2 rounded-2xl min-w-0 transition-all duration-150 will-change-transform active:scale-95 ${
                 isActive
                   ? 'text-white dock-active'
                   : 'text-[var(--text-muted)] dock-inactive'
               }`
             }
           >
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <motion.span
+                    layoutId="dock-active-pill"
+                    className="absolute inset-0 rounded-2xl"
+                    style={{
+                      background: 'linear-gradient(135deg, var(--brand-btn))',
+                      boxShadow: '0 6px 16px -6px rgba(var(--brand-rgb), 0.55)',
+                    }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                  />
+                )}
             <span className="relative flex-shrink-0">
               <Icon size={24} strokeWidth={2} />
               {to === '/review' && pendingCount > 0 && (
@@ -128,7 +146,9 @@ export function MobileNav() {
                 </span>
               )}
             </span>
-            <span className="hidden sm:inline text-[10px] font-semibold text-center leading-tight">{label}</span>
+            <span className="relative hidden sm:inline text-[10px] font-semibold text-center leading-tight">{label}</span>
+          </>
+            )}
           </NavLink>
         ))}
       </div>

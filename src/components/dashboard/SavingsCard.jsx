@@ -8,6 +8,7 @@ import { getSavingsBalance, getSavingsMonthStats, getMaxAllocatable } from '../.
 import AnimatedNumber from '../ui/AnimatedNumber';
 import Modal from '../ui/Modal';
 import TiltCard from '../ui/TiltCard';
+import { useReducedMotion, withReduced, variants } from '../../animations';
 
 export default function SavingsCard() {
   const savings = useSavings();
@@ -18,6 +19,8 @@ export default function SavingsCard() {
   const balance = getSavingsBalance(savings, transactions);
   const { allocated, spent } = getSavingsMonthStats(savings, transactions);
   const recent = savings.slice(0, 3);
+  const reduced = useReducedMotion();
+  const fadeUp = withReduced(variants.fadeUp, reduced);
 
   const handleDelete = async (id) => {
     if (confirm('Delete this savings entry?')) {
@@ -33,7 +36,12 @@ export default function SavingsCard() {
         style={{ background: 'rgba(var(--brand-rgb), 0.12)', filter: 'blur(30px)' }}
       />
 
-      <div className="relative flex items-center justify-between mb-4">
+      <motion.div
+        initial={fadeUp.initial}
+        animate={fadeUp.animate}
+        transition={{ ...fadeUp.transition, delay: 0.1 }}
+        className="relative flex items-center justify-between mb-4"
+      >
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--color-primary-600) 10%, transparent)' }}>
             <PiggyBank size={17} style={{ color: 'var(--color-primary-600)' }} />
@@ -47,18 +55,28 @@ export default function SavingsCard() {
           <Plus size={14} strokeWidth={3} />
           Add
         </button>
-      </div>
+      </motion.div>
 
-      <div className="relative mb-4">
+      <motion.div
+        initial={fadeUp.initial}
+        animate={fadeUp.animate}
+        transition={{ ...fadeUp.transition, delay: 0.2 }}
+        className="relative mb-4"
+      >
         <p className="text-[11px] uppercase tracking-wider font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>
           Available pot
         </p>
         <p className={`${formatAmount(balance).length > 14 ? 'text-2xl' : formatAmount(balance).length > 10 ? 'text-3xl' : 'text-4xl'} font-extrabold tracking-tight tabular-nums`}>
           <AnimatedNumber value={balance} formatAmount={formatAmount} />
         </p>
-      </div>
+      </motion.div>
 
-      <div className="relative grid grid-cols-2 gap-2 mb-4">
+      <motion.div
+        initial={fadeUp.initial}
+        animate={fadeUp.animate}
+        transition={{ ...fadeUp.transition, delay: 0.3 }}
+        className="relative grid grid-cols-2 gap-2 mb-4"
+      >
         <div className="p-3 rounded-2xl" style={{ background: 'var(--input-bg)' }}>
           <p className="text-[11px] uppercase tracking-wider font-semibold mb-0.5" style={{ color: 'var(--text-muted)' }}>
             Allocated this month
@@ -75,7 +93,7 @@ export default function SavingsCard() {
             −{formatAmount(spent)}
           </p>
         </div>
-      </div>
+      </motion.div>
 
       {recent.length > 0 && (
         <div className="relative space-y-1.5 mb-4">
@@ -253,7 +271,7 @@ function SavingsForm({ mode, onClose }) {
         </div>
 
         {error && (
-          <p className="text-sm font-medium animate-fade-in" style={{ color: '#ef4444' }}>{error}</p>
+          <p key={error} className="text-sm font-medium animate-shake" style={{ color: '#ef4444' }}>{error}</p>
         )}
 
         <button type="submit" className="w-full py-3 btn-primary font-semibold animate-slide-up stagger-5">

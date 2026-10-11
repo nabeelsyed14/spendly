@@ -2,8 +2,12 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useReducedMotion, withReduced, variants } from '../../animations';
 
 export default function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-lg' }) {
+  const reduced = useReducedMotion();
+  const overlay = withReduced(variants.modalOverlay, reduced);
+  const content = withReduced(variants.modalContent, reduced);
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
@@ -25,10 +29,10 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
       {isOpen && (
         <motion.div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
+          initial={overlay.initial}
+          animate={overlay.animate}
+          exit={overlay.exit}
+          transition={overlay.transition}
         >
           <div
             className="modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-[3px]"
@@ -42,10 +46,10 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
               boxShadow:
                 '0 32px 64px -24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
             }}
-            initial={{ opacity: 0, y: 36, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.96 }}
-            transition={{ type: 'spring', bounce: 0.18, duration: 0.5 }}
+            initial={content.initial}
+            animate={content.animate}
+            exit={content.exit}
+            transition={content.transition}
           >
             <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--border-solid)' }}>
               <h2 className="text-base font-bold">{title}</h2>

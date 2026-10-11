@@ -1,5 +1,8 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { motion, MotionConfig, useReducedMotion } from 'framer-motion';
+import { variants, withReduced } from './animations';
+import AnimatedRoutes from './components/layout/AnimatedRoutes';
 import { ThemeProvider } from './context/ThemeContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { ProfileProvider } from './context/ProfileContext';
@@ -18,13 +21,22 @@ import GoalsPage from './components/goals/GoalsPage';
 import ReportsPage from './components/reports/ReportsPage';
 import SettingsPage from './components/settings/SettingsPage';
 
+// Cold start renders instantly with no enter animation; every navigation
+// after that animates normally.
+let coldStart = true;
+
 function Page({ children }) {
+  const reduced = useReducedMotion();
+  const v = withReduced(variants.fadeUp, reduced);
+  useEffect(() => {
+    coldStart = false;
+  }, []);
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.12, ease: 'easeOut' }}
+      initial={coldStart ? false : v.initial}
+      animate={v.animate}
+      exit={v.exit}
+      transition={v.transition}
     >
       {children}
     </motion.div>
@@ -44,23 +56,6 @@ function Dashboard() {
         <TrendChart />
       </div>
     </div>
-  );
-}
-
-function AnimatedRoutes() {
-  const location = useLocation();
-  return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Page><Dashboard /></Page>} />
-        <Route path="/transactions" element={<Page><TransactionList /></Page>} />
-        <Route path="/review" element={<Page><ReviewPage /></Page>} />
-        <Route path="/insights" element={<Page><InsightsPage /></Page>} />
-        <Route path="/goals" element={<Page><GoalsPage /></Page>} />
-        <Route path="/reports" element={<Page><ReportsPage /></Page>} />
-        <Route path="/settings" element={<Page><SettingsPage /></Page>} />
-      </Routes>
-    </AnimatePresence>
   );
 }
 
@@ -97,7 +92,17 @@ export default function App() {
               <CurrencyPicker />
 
               <PageWrapper>
-                <AnimatedRoutes />
+                <AnimatedRoutes>
+                  <Routes>
+                    <Route path="/" element={<Page><Dashboard /></Page>} />
+                    <Route path="/transactions" element={<Page><TransactionList /></Page>} />
+                    <Route path="/review" element={<Page><ReviewPage /></Page>} />
+                    <Route path="/insights" element={<Page><InsightsPage /></Page>} />
+                    <Route path="/goals" element={<Page><GoalsPage /></Page>} />
+                    <Route path="/reports" element={<Page><ReportsPage /></Page>} />
+                    <Route path="/settings" element={<Page><SettingsPage /></Page>} />
+                  </Routes>
+                </AnimatedRoutes>
               </PageWrapper>
             </BrowserRouter>
           </MotionConfig>

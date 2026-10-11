@@ -225,7 +225,7 @@ export default function ImportModal({ isOpen, onClose, categories }) {
                       <button
                         key={t}
                         onClick={() => row.type !== t && toggleType(row)}
-                        className={`px-2.5 py-1 text-[11px] font-bold transition-all duration-150 ${
+                        className={`px-2.5 py-1 text-[11px] font-bold transition-all duration-150 active:scale-95 ${
                           row.type === t ? 'bg-primary-500 text-white' : 'hover:bg-primary-500/10'
                         }`}
                         style={row.type !== t ? { color: 'var(--text-muted)' } : {}}

@@ -115,6 +115,18 @@
     user-select: text;
     -webkit-touch-callout: default;
   }
+
+  /* Kill mobile tap flash + focus rings on tap targets and charts. Inputs
+     keep their brand focus ring; keyboard focus stays visible elsewhere. */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .recharts-wrapper:focus,
+  .recharts-wrapper svg:focus,
+  button:focus:not(:focus-visible),
+  a:focus:not(:focus-visible) {
+    outline: none;
+  }
 }
 
 .safe-top {
@@ -414,6 +426,11 @@
     animation: bar-fill 0.8s ease-out both;
   }
 
+  /* ── Error shake (retrigger by keying on the message) ── */
+  .animate-shake {
+    animation: shake 0.4s ease-out;
+  }
+
   /* ── Glow pulse ── */
   .glow-pulse {
     animation: glow-pulse 3s ease-in-out infinite;
@@ -429,9 +446,7 @@
     transition: box-shadow 0.15s ease, color 0.15s ease, transform 0.1s ease;
   }
   .dock-active {
-    background: linear-gradient(135deg, var(--brand-btn));
     color: #fff;
-    box-shadow: 0 6px 16px -6px rgba(var(--brand-rgb), 0.55);
   }
 
   /* ── Floating mobile dock: levitation shadow + top glass edge ── */
@@ -480,6 +495,12 @@
 
 @keyframes bar-fill {
   from { width: 0; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
 }
 
 @keyframes glow-pulse {

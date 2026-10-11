@@ -45,8 +45,8 @@ export default function TrendChart() {
                 <stop offset="95%" stopColor={brand} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 9, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={35} tickFormatter={(v) => formatAmount(v, { compact: true })} />
+            <XAxis dataKey="date" tick={{ fontSize: 9, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} interval={2} />
+            <YAxis tick={{ fontSize: 9, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={40} tickFormatter={(v) => formatAmount(v, { compact: true })} />
             <Tooltip
               formatter={(v) => [formatAmount(v), 'Spent']}
               contentStyle={{
@@ -58,7 +58,7 @@ export default function TrendChart() {
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
               }}
             />
-            <Area type="monotone" dataKey="amount" stroke={brand} strokeWidth={2} fill="url(#trendGrad)" animationDuration={1200} />
+            <Area type="monotone" dataKey="amount" stroke={brand} strokeWidth={2} fill="url(#trendGrad)" animationDuration={600} />
           </AreaChart>
         </ResponsiveContainer>
       </div>

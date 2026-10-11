@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { Pencil, Trash2, Search, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getCategoryIconComponent } from '../../lib/icons';
+import { useReducedMotion, withReduced, variants } from '../../animations';
 import TransactionForm from './TransactionForm';
 import { useTransactions, useCategories, addTransaction, updateTransaction, deleteTransaction } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -15,6 +16,8 @@ export default function TransactionList() {
   const [editing, setEditing] = useState(null);
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
+  const reduced = useReducedMotion();
+  const fadeUp = withReduced(variants.fadeUp, reduced);
 
   const catMap = useMemo(
     () => new Map(categories.map(c => [c.name, c])),
@@ -113,10 +116,15 @@ export default function TransactionList() {
       )}
 
       <div className="space-y-4">
-        {Object.entries(grouped).map(([dateKey, items], groupIdx) => {
+        {Object.entries(grouped).map(([dateKey, items]) => {
           const dayTotal = items.reduce((s, t) => s + (t.type === 'expense' ? -t.amount : t.amount), 0);
           return (
-            <div key={dateKey} className={`animate-slide-up stagger-${Math.min(groupIdx + 1, 6)}`}>
+            <motion.div
+              key={dateKey}
+              initial={fadeUp.initial}
+              animate={fadeUp.animate}
+              transition={fadeUp.transition}
+            >
               <div className="flex flex-wrap items-center justify-between mb-1.5 px-1 gap-x-2">
                 <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
                   {format(new Date(dateKey), 'EEEE, MMM d')}
@@ -131,11 +139,11 @@ export default function TransactionList() {
                     key={t.id}
                     className="group card p-4 flex items-center gap-3 cursor-pointer"
                     onClick={() => { setEditing(t); setShowForm(true); }}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.18, delay: Math.min(rowIdx * 0.03, 0.25) }}
-                    whileHover={{ y: -2, transition: { duration: 0.15 } }}
-                    whileTap={{ scale: 0.98, transition: { duration: 0.1 } }}
+                    initial={fadeUp.initial}
+                    animate={fadeUp.animate}
+                    transition={{ ...fadeUp.transition, delay: Math.min(rowIdx * 0.03, 0.25) }}
+                    whileHover={reduced ? undefined : { y: -2, transition: { duration: 0.15 } }}
+                    whileTap={reduced ? undefined : { scale: 0.98, transition: { duration: 0.1 } }}
                   >
                     <div
                       className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
@@ -179,7 +187,7 @@ export default function TransactionList() {
                   </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>

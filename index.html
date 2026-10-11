@@ -15,13 +15,22 @@
       html, body { margin: 0; padding: 0; background: #f5f3fa; }
       html.dark, html.dark body { background: #0d0a14; }
       #root { min-height: 100dvh; }
-      .boot { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+      .boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f5f3fa;
+        z-index: 99999;
+      }
+      html.dark .boot { background: #0d0a14; }
       .boot-dot {
-        width: 46px;
-        height: 46px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #6d28d9, #8b5cf6);
-        box-shadow: 0 10px 28px -8px rgba(109, 40, 217, 0.55);
+        background: linear-gradient(135deg, var(--boot-c1, #6d28d9), var(--boot-c2, #8b5cf6));
+        box-shadow: 0 10px 28px -8px rgba(var(--brand-rgb, 109, 40, 217), 0.55);
         animation: boot-pulse 1.1s ease-in-out infinite;
       }
       @keyframes boot-pulse {
@@ -33,19 +42,34 @@
       }
     </style>
     <script>
-      try {
-        var t = localStorage.getItem('spendly-theme');
-        if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        if (t === 'dark') document.documentElement.classList.add('dark');
-      } catch (e) {}
+      (function() {
+        try {
+          var t = localStorage.getItem('spendly-theme');
+          if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          if (t === 'dark') document.documentElement.classList.add('dark');
+
+          var palettes = {
+            violet:  { rgb: '109, 40, 217', c1: '#6d28d9', c2: '#8b5cf6', c600: '#6d28d9' },
+            emerald: { rgb: '5, 150, 105',  c1: '#059669', c2: '#34d399', c600: '#059669' },
+            ocean:   { rgb: '37, 99, 235',  c1: '#2563eb', c2: '#60a5fa', c600: '#2563eb' },
+            sunset:  { rgb: '234, 88, 12',  c1: '#ea580c', c2: '#fb923c', c600: '#ea580c' },
+            rose:    { rgb: '225, 29, 72',  c1: '#e11d48', c2: '#fb7185', c600: '#e11d48' }
+          };
+          var pId = localStorage.getItem('spendly-palette') || 'violet';
+          var pal = palettes[pId] || palettes.violet;
+          var root = document.documentElement;
+          root.style.setProperty('--brand-rgb', pal.rgb);
+          root.style.setProperty('--boot-c1', pal.c1);
+          root.style.setProperty('--boot-c2', pal.c2);
+
+          var metaTheme = document.querySelector('meta[name="theme-color"]');
+          if (metaTheme) metaTheme.setAttribute('content', pal.c600);
+        } catch (e) {}
+      })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-    <noscript>
-      <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    </noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"><div class="boot"><div class="boot-dot"></div></div></div>
