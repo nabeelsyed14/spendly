@@ -10,6 +10,7 @@ public class MainActivity extends BridgeActivity {
         // Must run before super.onCreate: BridgeActivity queues plugins into
         // its builder, which is consumed while the bridge loads.
         registerPlugin(DownloadsExport.class);
+        registerPlugin(SmsReader.class);
         super.onCreate(savedInstanceState);
         if (getBridge() != null && getBridge().getWebView() != null) {
             getBridge().getWebView().setVerticalScrollBarEnabled(false);

@@ -1,10 +1,17 @@
-import { useState } from 'react';
-import { Download, Upload, Tag, Moon, Sun, Globe, User, Trash2, Palette } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Download, Upload, Tag, Moon, Sun, Globe, User, Trash2, Palette, BellRing } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { useTheme } from '../../context/ThemeContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useProfile } from '../../context/ProfileContext';
 import { useTransactions, useCategories, addCategory, deleteCategory } from '../../hooks/useData';
 import { downloadCSV } from '../../lib/export';
+import {
+  isTrackingEnabled, setTrackingEnabled,
+  isNativeSmsSupported, smsPermissionGranted, requestSmsPermission, scanInbox,
+  notificationAccessGranted, openNotificationAccessSettings, listDeviceSenders,
+} from '../../lib/notifyCapture';
 import { tint } from '../../lib/color';
 import db from '../../lib/db';
 import Modal from '../ui/Modal';
@@ -145,6 +152,8 @@ export default function SettingsPage() {
           }
         />
 
+        <SmsTrackingCard />
+
         <SettingCard icon={Trash2} label="Clear History" color="#ef4444"
           action={
             <button
@@ -189,6 +198,184 @@ export default function SettingsPage() {
         <CategoryManager categories={categories} onClose={() => setShowCatManager(false)} />
       )}
     </div>
+  );
+}
+
+function SmsTrackingCard() {
+  const native = isNativeSmsSupported();
+  const [tracking, setTracking] = useState(isTrackingEnabled);
+  const [granted, setGranted] = useState(null);
+  const [notifGranted, setNotifGranted] = useState(null);
+  const [msg, setMsg] = useState('');
+  const [scanning, setScanning] = useState(false);
+  const [diag, setDiag] = useState(null);
+  const [diagLoading, setDiagLoading] = useState(false);
+  const pendingCount = useLiveQuery(() => db.pendingSpends.where('status').equals('pending').count(), []) || 0;
+
+  useEffect(() => {
+    if (native) {
+      smsPermissionGranted().then(setGranted).catch(() => setGranted(false));
+      notificationAccessGranted().then(setNotifGranted).catch(() => setNotifGranted(false));
+    } else {
+      setGranted(false);
+      setNotifGranted(false);
+    }
+  }, [native]);
+
+  const toggle = () => {
+    const next = !tracking;
+    setTracking(next);
+    setTrackingEnabled(next);
+  };
+
+  const grant = async () => {
+    try {
+      setGranted(await requestSmsPermission());
+    } catch {
+      setGranted(false);
+      setMsg('Permission request failed.');
+    }
+  };
+
+  const enableNotifications = () => {
+    openNotificationAccessSettings();
+    setMsg('Turn on access for Spendly in system settings, then come back.');
+  };
+
+  const scanNow = async () => {
+    setScanning(true);
+    setMsg('');
+    try {
+      const { scanned, added, inboxTotal } = await scanInbox();
+      const device = inboxTotal >= 0 ? ` (${inboxTotal} messages on device)` : '';
+      setMsg(`Scanned ${scanned} matching${device}, ${added} new to review.`);
+    } catch (e) {
+      setMsg(e?.message || 'Scan failed.');
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  const diagnose = async () => {
+    setDiagLoading(true);
+    try {
+      setDiag(await listDeviceSenders());
+    } catch (e) {
+      setMsg(e?.message || 'Diagnostics failed.');
+    } finally {
+      setDiagLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <SettingCard
+        icon={BellRing}
+        label="SMS Tracking"
+        description={tracking ? `${pendingCount} awaiting review` : 'Read bank SMS for review'}
+        color="var(--color-primary-600)"
+        action={
+          <button
+            onClick={toggle}
+            className="px-3 py-1.5 rounded-lg text-sm font-bold border transition-all duration-200 active:scale-95"
+            style={tracking
+              ? { background: 'var(--color-primary-600)', borderColor: 'transparent', color: '#fff' }
+              : { borderColor: 'var(--border-solid)', color: 'var(--text-muted)' }}
+          >
+            {tracking ? 'On' : 'Off'}
+          </button>
+        }
+      />
+      {tracking && (
+        <div className="card p-4 space-y-3">
+          {!native && (
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+              SMS reading needs the Android app — but you can still paste messages on the Review screen.
+            </p>
+          )}
+          {native && (
+            <>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm">
+                  SMS access: <span className="font-bold">{granted ? 'granted' : 'not granted'}</span>
+                </p>
+                {!granted && (
+                  <button
+                    onClick={grant}
+                    className="px-3 py-1.5 rounded-lg text-sm font-semibold border transition-all duration-200 hover:bg-primary-500/5 active:scale-95"
+                    style={{ borderColor: 'var(--border-solid)' }}
+                  >
+                    Grant access
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm">
+                  App notifications: <span className="font-bold">{notifGranted ? 'enabled' : 'off'}</span>
+                </p>
+                {!notifGranted && (
+                  <button
+                    onClick={enableNotifications}
+                    className="px-3 py-1.5 rounded-lg text-sm font-semibold border transition-all duration-200 hover:bg-primary-500/5 active:scale-95"
+                    style={{ borderColor: 'var(--border-solid)' }}
+                  >
+                    Enable
+                  </button>
+                )}
+              </div>
+              <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                Captures payment-app alerts the SMS inbox never sees. Android opens system settings —
+                turn on access for Spendly there. Some phones also need autostart permission.
+              </p>
+              <button
+                onClick={scanNow}
+                disabled={scanning}
+                className="w-full p-2.5 rounded-xl border text-sm font-bold transition-all duration-200 hover:bg-primary-500/5 active:scale-95 disabled:opacity-50"
+                style={{ borderColor: 'var(--border-solid)' }}
+              >
+                {scanning ? 'Scanning…' : 'Scan now'}
+              </button>
+              {msg && (
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{msg}</p>
+              )}
+              <button
+                onClick={diagnose}
+                disabled={diagLoading}
+                className="w-full text-xs font-bold transition-all duration-150 hover:opacity-70 active:scale-95 disabled:opacity-50"
+                style={{ color: 'var(--color-primary-600)' }}
+              >
+                {diagLoading ? 'Checking…' : 'Diagnose: what is actually on this device?'}
+              </button>
+              {diag && (
+                <div className="p-2.5 rounded-xl space-y-1.5" style={{ background: 'var(--input-bg)' }}>
+                  {diag.inboxTotal === 0 ? (
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      No SMS stored on this device — chat-style (RCS) messages never enter the SMS inbox.
+                      Paste messages on the Review screen instead.
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-xs font-bold">
+                        {diag.inboxTotal} messages stored on this device
+                      </p>
+                      {diag.senders.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {diag.senders.slice(0, 10).map((s) => (
+                            <span key={s.address} className="tag" style={{ background: 'var(--surface-solid)', color: 'var(--text-muted)' }}>
+                              {s.address || '(no sender)'} · {s.count}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </>
   );
 }
 

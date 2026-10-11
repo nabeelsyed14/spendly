@@ -1,19 +1,41 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, ArrowLeftRight, Lightbulb, Target, FileText, Settings } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { LayoutDashboard, ArrowLeftRight, Lightbulb, Target, FileText, Settings, Inbox } from 'lucide-react';
 import { useProfile } from '../../context/ProfileContext';
+import { isTrackingEnabled } from '../../lib/notifyCapture';
+import db from '../../lib/db';
 import Avatar from '../ui/Avatar';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/transactions', icon: ArrowLeftRight, label: 'Transactions' },
+  { to: '/review', icon: Inbox, label: 'Review' },
   { to: '/insights', icon: Lightbulb, label: 'Insights' },
   { to: '/goals', icon: Target, label: 'Health' },
   { to: '/reports', icon: FileText, label: 'Reports' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
+function usePendingCount() {
+  return useLiveQuery(() => db.pendingSpends.where('status').equals('pending').count(), []) || 0;
+}
+
+function useTrackingOn() {
+  const [on, setOn] = useState(isTrackingEnabled);
+  useEffect(() => {
+    const sync = () => setOn(isTrackingEnabled());
+    window.addEventListener('spendly-tracking-changed', sync);
+    return () => window.removeEventListener('spendly-tracking-changed', sync);
+  }, []);
+  return on;
+}
+
 export default function Sidebar() {
   const { userName, avatarPhoto } = useProfile();
+  const pendingCount = usePendingCount();
+  const trackingOn = useTrackingOn();
+  const items = navItems.filter((i) => i.to !== '/review' || trackingOn);
 
   return (
     <aside
@@ -28,7 +50,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex flex-col gap-1.5 flex-1 p-4">
-        {navItems.map(({ to, icon: Icon, label }) => (
+        {items.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
@@ -49,6 +71,11 @@ export default function Sidebar() {
                 )}
                 <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
                 {label}
+                {to === '/review' && pendingCount > 0 && (
+                  <span className="ml-auto tag" style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
+                    {pendingCount}
+                  </span>
+                )}
               </>
             )}
           </NavLink>
@@ -67,7 +94,9 @@ export default function Sidebar() {
 }
 
 export function MobileNav() {
-  const items = navItems.slice(0, 5);
+  const trackingOn = useTrackingOn();
+  const items = navItems.filter((i) => i.to !== '/review' || trackingOn).slice(0, trackingOn ? 6 : 5);
+  const pendingCount = usePendingCount();
 
   return (
     <nav
@@ -88,7 +117,17 @@ export function MobileNav() {
               }`
             }
           >
-            <Icon size={24} strokeWidth={2} />
+            <span className="relative flex-shrink-0">
+              <Icon size={24} strokeWidth={2} />
+              {to === '/review' && pendingCount > 0 && (
+                <span
+                  className="absolute -top-1.5 -right-2 min-w-4 h-4 px-0.5 rounded-full text-[9px] font-extrabold flex items-center justify-center tabular-nums"
+                  style={{ background: '#ef4444', color: '#fff' }}
+                >
+                  {pendingCount > 9 ? '9+' : pendingCount}
+                </span>
+              )}
+            </span>
             <span className="hidden sm:inline text-[10px] font-semibold text-center leading-tight">{label}</span>
           </NavLink>
         ))}

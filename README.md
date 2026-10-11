@@ -11,6 +11,7 @@ A personal budget tracker for income, expenses, and savings goals. Runs in the b
 - Category breakdowns with trend detection
 - Reports — monthly and all-time views with a month picker and day-by-day drill-down
 - CSV import/export — on-device parsing, review-before-import, export saved straight to Downloads on Android
+- SMS spend tracking (Android) — bank SMS parsed on-device into a review inbox; approve to add
 - Dark/light theme with manual toggle
 - Avatar customization (gradient picker or photo)
 - Installable web app (PWA)
@@ -65,6 +66,8 @@ npm run icons
 ## Data & privacy
 
 All data is stored in your device's IndexedDB. Nothing is sent to any server, and there is no analytics or tracking.
+
+SMS tracking (Android only, opt-in) reads messages from sender IDs you enable, parses possible spends entirely on-device, and holds them in a local review inbox until you approve or discard them. Messages never leave your phone.
 
 Clearing browser or app data removes all transactions. Data is not synced across devices.
 

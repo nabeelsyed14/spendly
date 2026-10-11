@@ -351,15 +351,6 @@
       0 4px 10px -6px rgba(var(--brand-rgb), 0.4);
   }
 
-  /* ── Press feedback ── */
-  .pressable {
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
-    cursor: pointer;
-  }
-  .pressable:active {
-    transform: scale(0.97);
-  }
-
   /* ── Input ── */
   .input {
     background: var(--input-bg);

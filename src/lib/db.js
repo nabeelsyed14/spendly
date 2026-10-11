@@ -14,4 +14,9 @@ db.version(2).stores({
   savings: '++id, kind, date, createdAt',
 });
 
+// v3: SMS review inbox.
+db.version(3).stores({
+  pendingSpends: '++id, status, sourceHash, detectedAt, createdAt',
+});
+
 export default db;

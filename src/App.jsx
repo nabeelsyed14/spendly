@@ -12,6 +12,7 @@ import CategoryChart from './components/dashboard/CategoryChart';
 import TrendChart from './components/dashboard/TrendChart';
 import HealthScore from './components/dashboard/HealthScore';
 import TransactionList from './components/transactions/TransactionList';
+import ReviewPage from './components/review/ReviewPage';
 import InsightsPage from './components/insights/InsightsPage';
 import GoalsPage from './components/goals/GoalsPage';
 import ReportsPage from './components/reports/ReportsPage';
@@ -53,6 +54,7 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Page><Dashboard /></Page>} />
         <Route path="/transactions" element={<Page><TransactionList /></Page>} />
+        <Route path="/review" element={<Page><ReviewPage /></Page>} />
         <Route path="/insights" element={<Page><InsightsPage /></Page>} />
         <Route path="/goals" element={<Page><GoalsPage /></Page>} />
         <Route path="/reports" element={<Page><ReportsPage /></Page>} />

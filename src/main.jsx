@@ -3,6 +3,11 @@ import { createRoot } from 'react-dom/client'
 import { Capacitor } from '@capacitor/core'
 import './index.css'
 import App from './App.jsx'
+import { drainOnLaunch } from './lib/notifyCapture'
+
+// Silent best-effort SMS drain: only runs when tracking is on and permission
+// was already granted (never prompts on launch).
+drainOnLaunch();
 
 // Old APKs shipped a precaching service worker; it can keep serving stale
 // bundles after an update. Remove it (and its caches) when running natively.
