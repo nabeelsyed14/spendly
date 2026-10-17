@@ -1,4 +1,4 @@
-package com.spendly.app;
+package com.spendly10.app;
 
 import android.app.Notification;
 import android.content.Context;

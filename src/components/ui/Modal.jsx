@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useReducedMotion, withReduced, variants } from '../../animations';
 
-export default function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-lg' }) {
+export default function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-lg', zIndexClass = 'z-50' }) {
   const reduced = useReducedMotion();
   const overlay = withReduced(variants.modalOverlay, reduced);
   const content = withReduced(variants.modalContent, reduced);
@@ -28,7 +28,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className={`fixed inset-0 ${zIndexClass} flex items-center justify-center p-4`}
           initial={overlay.initial}
           animate={overlay.animate}
           exit={overlay.exit}

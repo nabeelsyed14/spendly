@@ -18,6 +18,7 @@ import { CURRENCY_FLAGS } from '../ui/CurrencyPicker';
 import Avatar from '../ui/Avatar';
 import AvatarPicker from '../ui/AvatarPicker';
 import ImportModal from '../import/ImportModal';
+import SmsPermissionDisclosure from '../ui/SmsPermissionDisclosure';
 
 export default function SettingsPage() {
   const { theme, toggleTheme, palette, paletteId, setPaletteId, palettes } = useTheme();
@@ -219,6 +220,7 @@ function SmsTrackingCard() {
   const [scanning, setScanning] = useState(false);
   const [diag, setDiag] = useState(null);
   const [diagLoading, setDiagLoading] = useState(false);
+  const [showSmsDisclosure, setShowSmsDisclosure] = useState(false);
   const pendingCount = useLiveQuery(() => db.pendingSpends.where('status').equals('pending').count(), []) || 0;
 
   useEffect(() => {
@@ -233,13 +235,23 @@ function SmsTrackingCard() {
 
   const toggle = () => {
     const next = !tracking;
+    if (next && native && !granted) {
+      setShowSmsDisclosure(true);
+      return;
+    }
     setTracking(next);
     setTrackingEnabled(next);
   };
 
   const grant = async () => {
+    setShowSmsDisclosure(false);
     try {
-      setGranted(await requestSmsPermission());
+      const wasGranted = await requestSmsPermission();
+      setGranted(wasGranted);
+      if (wasGranted) {
+        setTracking(true);
+        setTrackingEnabled(true);
+      }
     } catch {
       setGranted(false);
       setMsg('Permission request failed.');
@@ -384,6 +396,11 @@ function SmsTrackingCard() {
           )}
         </div>
       )}
+      <SmsPermissionDisclosure
+        isOpen={showSmsDisclosure}
+        onClose={() => setShowSmsDisclosure(false)}
+        onContinue={grant}
+      />
     </>
   );
 }

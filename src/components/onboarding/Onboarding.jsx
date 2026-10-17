@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, ArrowRight, BellRing, Plus, Sparkles, Table, Wallet } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 import { setTrackingEnabled, requestSmsPermission, isNativeSmsSupported } from '../../lib/notifyCapture';
+import SmsPermissionDisclosure from '../ui/SmsPermissionDisclosure';
 
 const FLAG_KEY = 'spendly-onboarded';
 
@@ -43,6 +44,7 @@ export default function Onboarding() {
   const [done, setDone] = useState(isOnboarded);
   const [step, setStep] = useState(0);
   const [smsState, setSmsState] = useState('idle');
+  const [showSmsDisclosure, setShowSmsDisclosure] = useState(false);
   const native = isNativeSmsSupported();
 
   if (done || !hasChosenCurrency) return null;
@@ -54,10 +56,11 @@ export default function Onboarding() {
 
   const enableSms = async () => {
     if (!native) return;
+    setShowSmsDisclosure(false);
     setSmsState('working');
     try {
-      setTrackingEnabled(true);
-      await requestSmsPermission();
+      const granted = await requestSmsPermission();
+      setTrackingEnabled(granted);
     } catch {
       // stays visible in Settings either way
     } finally {
@@ -115,7 +118,7 @@ export default function Onboarding() {
       footer: native ? (
         <div className="space-y-2">
           <button
-            onClick={enableSms}
+            onClick={() => setShowSmsDisclosure(true)}
             disabled={smsState !== 'idle'}
             className="w-full py-3.5 rounded-full btn-primary font-bold text-base disabled:opacity-60"
           >
@@ -194,6 +197,11 @@ export default function Onboarding() {
 
         <Dots step={step} total={steps.length} />
       </div>
+      <SmsPermissionDisclosure
+        isOpen={showSmsDisclosure}
+        onClose={() => setShowSmsDisclosure(false)}
+        onContinue={enableSms}
+      />
     </div>
   );
 }
