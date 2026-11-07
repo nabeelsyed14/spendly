@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import db from '../lib/db';
 import { ALL_DEFAULTS } from '../lib/categories';
+import { getLedgerBalances } from '../lib/savings';
 
 // Guard with a module-level promise so seeding only fires once per app session,
 // regardless of how many components import this module.
@@ -90,7 +91,19 @@ export async function deleteHealthGoal(id) {
 }
 
 export async function addSavingsEntry(data) {
-  return db.savings.add({ ...data, createdAt: new Date().toISOString() });
+  return db.transaction('rw', db.transactions, db.savings, async () => {
+    const transactions = await db.transactions.toArray();
+    const savings = await db.savings.toArray();
+    const { wallet, savingsBalance } = getLedgerBalances(transactions, savings);
+    const fromWallet = data.kind === 'deposit';
+    const available = fromWallet ? wallet : savingsBalance;
+    if (Math.round(data.amount * 100) > Math.round(available * 100)) {
+      throw new Error(fromWallet
+        ? 'This amount exceeds the available wallet balance.'
+        : 'This amount exceeds the available savings balance.');
+    }
+    return db.savings.add({ ...data, createdAt: new Date().toISOString() });
+  });
 }
 
 export async function updateSavingsEntry(id, data) {

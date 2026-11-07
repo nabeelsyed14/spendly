@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { useSavings, useTransactions, addSavingsEntry, deleteSavingsEntry } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
-import { getSavingsBalance, getSavingsMonthStats, getMaxAllocatable } from '../../lib/savings';
+import { getLedgerBalances, getSavingsBalance, getSavingsMonthStats } from '../../lib/savings';
 import AnimatedNumber from '../ui/AnimatedNumber';
 import Modal from '../ui/Modal';
 import TiltCard from '../ui/TiltCard';
@@ -160,29 +160,32 @@ function SavingsForm({ mode, onClose }) {
   const [note, setNote] = useState('');
   const [date, setDate] = useState(() => format(new Date(), 'yyyy-MM-dd'));
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
   const transactions = useTransactions();
   const savings = useSavings();
   const { currency, formatAmount } = useCurrency();
-  const maxAllocatable = kind === 'deposit'
-    ? getMaxAllocatable(transactions, savings, new Date(date))
-    : 0;
+  const { wallet, savingsBalance } = getLedgerBalances(transactions, savings);
+  const available = Math.max(0, kind === 'deposit' ? wallet : savingsBalance);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const value = parseFloat(amount);
-    if (!value || value <= 0) return;
-    if (kind === 'deposit' && value > maxAllocatable) {
-      setError(`Only ${formatAmount(maxAllocatable)} available to allocate from remaining income.`);
-      return;
-    }
+    if (saving || !Number.isFinite(value) || value <= 0 || !date) return;
+    setSaving(true);
     setError('');
-    await addSavingsEntry({
-      kind,
-      amount: value,
-      note: note.trim(),
-      date: new Date(date).toISOString(),
-    });
-    onClose();
+    try {
+      await addSavingsEntry({
+        kind,
+        amount: value,
+        note: note.trim(),
+        date: new Date(date).toISOString(),
+      });
+      onClose();
+    } catch (err) {
+      setError(err.message || 'Could not save the transfer.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -239,14 +242,12 @@ function SavingsForm({ mode, onClose }) {
               autoFocus
             />
           </div>
-          {kind === 'deposit' && (
-            <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-muted)' }}>
-              Available to allocate:{' '}
-              <span className="font-bold" style={{ color: 'var(--color-primary-600)' }}>
-                {formatAmount(maxAllocatable)}
-              </span>
-            </p>
-          )}
+          <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-muted)' }}>
+            {kind === 'deposit' ? 'Available in wallet:' : 'Available in savings:'}{' '}
+            <span className="font-bold" style={{ color: 'var(--color-primary-600)' }}>
+              {formatAmount(available)}
+            </span>
+          </p>
         </div>
 
         <div className="animate-slide-up stagger-3">
@@ -264,6 +265,7 @@ function SavingsForm({ mode, onClose }) {
           <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Date</label>
           <input
             type="date"
+            required
             value={date}
             onChange={e => setDate(e.target.value)}
             className="input w-full"
@@ -274,7 +276,7 @@ function SavingsForm({ mode, onClose }) {
           <p key={error} className="text-sm font-medium animate-shake" style={{ color: '#ef4444' }}>{error}</p>
         )}
 
-        <button type="submit" className="w-full py-3 btn-primary font-semibold animate-slide-up stagger-5">
+        <button type="submit" disabled={saving} className="w-full py-3 btn-primary font-semibold animate-slide-up stagger-5 disabled:opacity-50">
           {kind === 'deposit' ? 'Add to Savings' : 'Withdraw'}
         </button>
       </form>

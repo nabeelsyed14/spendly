@@ -4,8 +4,8 @@ import { TrendingUp, TrendingDown, PiggyBank, Wallet } from 'lucide-react';
 import { useTransactions, useSavings } from '../../hooks/useData';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useProfile } from '../../context/ProfileContext';
-import { getMonthlyTotals, getAllTimeTotals } from '../../lib/insights';
-import { getSavingsBalance, getSavingsMonthStats } from '../../lib/savings';
+import { getMonthlyTotals } from '../../lib/insights';
+import { getLedgerBalances } from '../../lib/savings';
 import Avatar from '../ui/Avatar';
 import AnimatedNumber from '../ui/AnimatedNumber';
 import TiltCard from '../ui/TiltCard';
@@ -17,10 +17,7 @@ export default function BalanceCard() {
   const { formatAmount } = useCurrency();
   const { userName, getGreeting, avatarPhoto } = useProfile();
   const { income, expense, balance } = getMonthlyTotals(transactions);
-  const { netSavings } = getAllTimeTotals(transactions);
-  const savingsBalance = getSavingsBalance(savings, transactions);
-  const { allocated, withdrawn } = getSavingsMonthStats(savings, transactions);
-  const wallet = income - expense - allocated + withdrawn;
+  const { total, savingsBalance, wallet } = getLedgerBalances(transactions, savings);
 
   const greeting = userName ? `${getGreeting()}, ${userName}` : getGreeting();
   const reduced = useReducedMotion();
@@ -28,7 +25,7 @@ export default function BalanceCard() {
 
   // Tier the hero font by final string length so long letter-currency
   // amounts (e.g. "AED 6,529,112") never overflow the card on narrow screens.
-  const heroLength = formatAmount(netSavings).length;
+  const heroLength = formatAmount(total).length;
   const heroSize =
     heroLength > 16 ? 'text-2xl md:text-3xl'
     : heroLength > 12 ? 'text-3xl md:text-4xl'
@@ -84,7 +81,7 @@ export default function BalanceCard() {
           transition={{ ...fadeUp.transition, delay: 0.2 }}
           className={`${heroSize} font-extrabold mb-6 tracking-tight tabular-nums min-h-[1.2em]`}
         >
-          <AnimatedNumber value={netSavings} formatAmount={formatAmount} />
+          <AnimatedNumber value={total} formatAmount={formatAmount} />
         </motion.p>
 
         <motion.div
